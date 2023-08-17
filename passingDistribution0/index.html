@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+<style>
+     
+    body {
+   
+    margin: 0px;
+    }
+    svg text {
+            font-family: Helvetica, YDIYGO320, '08SeoulNamsan B', 돋움체,Arial;         
+            font-weight: bold;
+        }
+    
+    </style>
+ 
+
+</head>
+ 
+<body>
+    <div id="soccer">
+        <svg id="players" width="640" height="1024" style="overflow:hidden">
+
+            <g id="ground" transform="translate(0,0) scale(1)">
+                <rect id="XMLID_4_" style="fill:#232823;" width="640" height="1024" />
+            </g>
+            <g id="groundLine" transform="translate(0,0) scale(1)">
+                <g id="XMLID_1_">
+                    <rect id="XMLID_41_" x="25" y="69.107" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" width="590" height="884" />
+
+                    <rect id="XMLID_40_" x="158" y="70.107" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" width="322" height="128" />
+                    <polyline id="XMLID_39_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" points="158,953.107
+			158,826.107 479,826.107 479,953.107 		" />
+                    <polyline id="XMLID_38_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" points="262,69.107 262,113.107
+			375,113.107 375,69.107 		" />
+                    <polyline id="XMLID_37_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" points="262,953.107
+			262,909.107 375,909.107 375,953.107 		" />
+                    <polyline id="XMLID_36_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" points="276,69.107 276,47.107
+			362,47.107 362,69.107 		" />
+                    <polyline id="XMLID_3_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" points="362,954.107 362,977.107
+			276,977.107 276,954.107 		" />
+                    <path id="XMLID_35_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M273.665,953.242" />
+                    <path id="XMLID_34_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M273.665,971.55" />
+
+                    <line id="XMLID_32_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" x1="25" y1="512.107" x2="615" y2="512.107" />
+
+                    <circle id="XMLID_31_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" cx="320.455" cy="511.335" r="78.688" />
+                    <path id="XMLID_30_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M25.291,80.978
+			c6.132-0.128,11.065-5.129,11.065-11.292" />
+                    <path id="XMLID_29_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M603.995,69.49
+			c0.128,6.132,5.13,11.065,11.292,11.065" />
+                    <path id="XMLID_28_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M615.174,941.474
+			c-6.132,0.128-11.065,5.13-11.065,11.292" />
+                    <path id="XMLID_27_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M36.16,952.652
+			c-0.128-6.132-5.129-11.065-11.292-11.065" />
+                    <path id="XMLID_26_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M257.546,197.28
+			c12.485,21.711,35.912,36.33,62.755,36.33c26.842,0,50.27-14.619,62.755-36.33" />
+
+                    <line id="XMLID_21_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" x1="257" y1="198.107" x2="383" y2="198.107" />
+                    <path id="XMLID_19_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" d="M256.758,825.339
+			c12.269-22.484,36.124-37.739,63.542-37.739c27.418,0,51.273,15.255,63.542,37.739" />
+
+                    <line id="XMLID_18_" style="fill:none;stroke:#202020;stroke-width:4;stroke-miterlimit:10;" x1="257" y1="826.107" x2="384" y2="826.107" />
+                </g>
+            </g>
+        </svg>
+
+    </div> 
+    
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+     window.onload = function () {
+        //
+        // console.log(Math.sin(Math.PI));
+        //Input data
+        var data = [
+     ["김승규", "박주호", "장현수", "김기희", "김창수", "기성용", "지동원", "구자철", "남태희", "손흥민", "이정협", "유효슛"],
+[320, 70, 227, 424, 577, 319, 523, 304, 184, 86, 319, 320], //x좌표 (모바일)
+[935, 533, 662, 646, 506, 568, 357, 393, 358, 298, 231, 85], //y좌표 (모바일)
+
+[23, 6, 20, 4, 22, 16, 11, 13, 10, 7, 18, ], //등번호
+[16, 95, 100, 77, 47, 77, 26, 52, 54, 43, 26, 1], //노드크기
+[0, 2, 1, 3, 1, 1, 0, 0, 2, 0, 0, 0],
+[0, 0, 13, 1, 1, 7, 1, 5, 5, 14, 3, 0],
+[2, 17, 0, 13, 2, 8, 1, 8, 1, 0, 0, 0],
+[2, 0, 17, 0, 8, 11, 0, 1, 0, 1, 0, 0],
+[0, 0, 0, 5, 0, 0, 5, 3, 1, 0, 5, 0],
+[0, 3, 11, 10, 4, 0, 2, 7, 2, 1, 0, 0],
+[0, 2, 0, 1, 3, 1, 0, 0, 3, 0, 0, 0],
+[0, 5, 0, 1, 5, 4, 2, 0, 5, 1, 2, 0],
+[1, 6, 4, 3, 2, 3, 3, 0, 0, 2, 4, 0],
+[1, 8, 2, 0, 2, 1, 0, 2, 4, 0, 1, 1],
+[0, 2, 0, 0, 0, 1, 2, 1, 3, 2, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], //슛
+
+
+
+        ];
+
+        function Data_nodes(name, x, y, number, radius, group) {
+            this.number = number;
+            this.name = name;
+            this.radius = radius;
+            this.group = group;
+            this.x = x;
+            this.y = y;
+        }
+
+        function Data_links(source, target, value) {
+            this.source = source;
+            this.target = target;
+            this.value = value;
+        }
+
+        var graph = { nodes: [], links: [] };
+
+        for (var i = 0 ; i < data[0].length ; i++) {
+            graph.nodes.push(new Data_nodes(data[0][i], data[1][i], data[2][i], data[3][i], data[4][i], i));
+        }
+
+        for (var i = 0 ; i < data[0].length ; i++) {
+            for (var j = 0 ; j < data[0].length ; j++) {
+                if (data[i + 5][j] != 0) graph.links.push(new Data_links(i, j, data[i + 5][j]));
+            }
+        }
+
+        //너비높이
+        var width = getWidth();
+        function getWidth() {
+            if (self.innerWidth) {
+                return self.innerWidth;
+            }
+
+            if (document.documentElement && document.documentElement.clientWidth) {
+                return document.documentElement.clientWidth;
+            }
+
+            if (document.body) {
+                return document.body.clientWidth;
+            }
+        }
+        
+        var height = width * 1.6;
+
+        var svg = d3.select("#players");
+        svg.attr("width", width)
+            .attr("height", height);
+        var scaleW = width / 640;
+
+
+        //위의 그룹별로 이 컬러 지정
+        var color = ["#d2af7f", "#6e969b", "#bec7a8", "#89a2b5", "#ca9d66", "#c4bab6", "#7db0a4", "#75adb8", "#9d9c8d",
+                "#bccf85", "#d3c2a0", "#bfa68e", "#d6ca81", "#c4d6c9"];
+        
+
+        //초기 스케일 셋팅
+        var radiusScale = d3.scale.pow().exponent(1);
+        var textScale = d3.scale.pow().exponent(1);
+        var lineWidthScale = d3.scale.pow().exponent(1);
+        var arrowScale = d3.scale.pow().exponent(1);
+        var OpacityScale = d3.scale.pow().exponent(1);
+        var frqScale = d3.scale.pow().exponent(1);
+
+        var arrowSize = 5;
+
+        //드래그를 위한 정의
+        var drag = d3.behavior.drag()
+                .origin(function (d) { return d; })
+                .on("dragstart", dragstarted)
+                .on("drag", dragged)
+                .on("dragend", dragended);
+        function dragstarted(d) {
+            d3.event.sourceEvent.stopPropagation();
+            d.fixed |= 2;
+            force.stop();
+        }
+        function dragged(d) {
+            var mouse = d3.mouse(svg.node());
+
+            if (mouse[0] <= 0) mouse[0] = 0;
+            if (mouse[0] >= width) mouse[0] = width;
+            if (mouse[1] <= 0) mouse[1] = 0;
+            if (mouse[1] >= height) mouse[1] = height;
+
+            d.x = xScale.invert(mouse[0]);
+            d.y = yScale.invert(mouse[1]);
+            d.px = d.x;
+            d.py = d.y;
+            tick();
+
+        }
+        function dragended(d) {
+            d.fixed &= ~6;
+            tick();
+        }
+
+
+        //force layout 정의
+        var force = d3.layout.force()
+                        .size([width, height]);
+
+        //기본 데이터 링크
+        force
+            .nodes(graph.nodes)
+            .links(graph.links)
+            .start();
+
+        //스케일 정의
+        var scaleRef = 20; //라인 두께와 화살표 연동
+
+        radiusScale.domain([d3.min(graph.nodes, function (d) { return d.radius; }), d3.max(graph.nodes, function (d) { return d.radius; })])
+                        .range([10, 20]);
+        textScale.domain([d3.min(graph.nodes, function (d) { return d.radius; }), d3.max(graph.nodes, function (d) { return d.radius; })])
+                        .range([9, 14]);
+        lineWidthScale.domain([d3.min(graph.links, function (d) { return d.value; }), d3.max(graph.links, function (d) { return d.value; })])
+                        .range([1, scaleRef]);
+        arrowScale.domain([d3.min(graph.links, function (d) { return d.value; }), d3.max(graph.links, function (d) { return d.value; })])
+                        .range([0.2, scaleRef / 4]);
+        OpacityScale.domain([d3.min(graph.links, function (d) { return d.value; }), d3.max(graph.links, function (d) { return d.value; })])
+                        .range([0.2, 1]);
+        frqScale.domain([d3.min(graph.links, function (d) { return d.value; }), d3.max(graph.links, function (d) { return d.value; })])
+                        .range([20, 60]);
+
+        //배경
+        svg.select("#ground").select("rect")
+            .style("fill", "#232823");
+
+        svg.select("#groundLine").selectAll("*")
+            .style("stroke", "#202020");
+
+
+        //화살표를 위한 곳
+        
+        var targetBuffer = 50;
+
+        var edge = svg.append("g")
+                        .attr("class", "edge")
+                        .attr("fill", "none");
+
+        var arrow = svg.append("g")
+                        .attr("class", "arrows");
+
+        var link = edge.selectAll(".lines")
+                    .data(graph.links, function (d) { return d.source.name + d.target.name + d.value; });
+
+        var arrowHead = arrow.selectAll(".arrow")
+                    .data(graph.links, function (d) { return d.source.name + d.target.name + d.value; })
+                    .enter()
+                    .append("g")
+                    .attr("class", "arrow").attr("id", function (d, i) { return "arrow" + d.source.name.replace(/[\s()]/gi, "") + d.target.name.replace(/[\s()]/gi, ""); })
+                    ;
+        var frqcy = svg.append("g")
+                        .attr("class", "passFrequency");
+                        
+
+        var node = svg.selectAll(".node")
+            .data(graph.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .call(drag)//여기를 주석처리하면 드래그 안되게 할 수 있음
+            ;  
+
+
+        //zoom 을 위한 정의
+        var xScale = d3.scale.linear()
+                    .domain([0, width])
+                    .range([0, width]);
+
+        var yScale = d3.scale.linear()
+                    .domain([0, height])
+                    .range([0, height]);
+        var zoomer = d3.behavior.zoom().x(xScale).y(yScale).scaleExtent([scaleW, 6]).on("zoom", zoom).translate([0, 0]).scale(scaleW);;
+        
+
+        function zoom(f) {
+
+            var d3et;
+            var d3es;
+
+            if (f != null) { //초기화할때 한번만 실행되는 부분
+                d3et = [0, 0];
+                d3es = scaleW;
+                d3esT = d3es * 0.5 + 0.5;
+            } else {
+                d3et = d3.event.translate;
+                d3es = d3.event.scale;
+                d3esT = d3es * 0.5 + 0.5;
+            }
+            
+            //console.log(d3et + " | " + d3es);
+            d3et[0] = Math.min(0, Math.max(width * (1 - d3es/scaleW), d3et[0]));
+            d3et[1] = Math.min(0, Math.max(height * (1- d3es/scaleW), d3et[1]));
+            zoomer.translate(d3et);
+            //zoomer.scale(d3es);
+            svg.select("#ground")
+                    .attr("transform", "translate(" + d3et + ") scale(" + d3es + ")");
+
+            svg.select("#groundLine")
+                    .attr("transform", "translate(" + d3et + ") scale(" + d3es + ")");
+ 
+           
+            node.selectAll(".cir").attr("r", function (d) {
+                if (d.radius == 0) {
+                    return d3esT * 2;
+                } else {
+                    return d3esT * radiusScale(d.radius);
+                }
+            });
+
+            node.selectAll(".name")
+                .attr("dy", (-1.5 * (1 + (d3esT - 1) * 0.1)) + "em")
+                .style("font-size", function (d) { return d3esT * (textScale(d.radius) + 3) + "px" });
+
+            node.selectAll(".number")
+                .attr("dy", (0.27 * (1 + (d3esT - 1) * 0.1)) + "em")
+                    .style("font-size", function (d) { return d3esT * textScale(d.radius) + "px" });
+
+            link.attr("stroke-width", function (d) { return d3esT * lineWidthScale(d.value) + "px"; })
+
+            svg.selectAll(".frq")
+               .style("font-size", function (d) { return (frqScale(d.__data__.value) * d3esT) + "px"; })
+
+            tick();
+
+        };
+
+        //svg.call(zoomer);
+
+
+
+        link.enter().insert("path", "g")
+            .attr("class", function (d) { return "lines " + d.source.name + " off"; })
+            .attr("id", function (d, i) { return "path" + d.source.name.replace(/[\s()]/gi, "") + d.target.name.replace(/[\s()]/gi, ""); })
+            .attr("stroke", function (d) { return color[d.source.group]; })
+            .attr("stroke-opacity", function (d) { return OpacityScale(d.value); });  
+
+
+        link.exit().remove();
+
+
+        arrowHead.append("path")
+                .attr("d", "M0,-4L" + arrowSize + ",0L0,4")
+                .attr("class", function (d) { return "arrowHead " + d.source.name + " off"; })
+                //.attr("d", "M-10,5L-10,-5L0,0")
+                .attr("fill", function (d, i) { return color[d.source.group]; });
+
+
+
+        //노드 그리기
+        node.append("circle")
+            .attr("class", "cir")
+            .attr("stroke", "#fff")
+            .attr("stroke-width", "3px")
+            .style("fill", function (d) { return color[d.group]; })
+            .on("click", click);
+
+        node.append("text")
+                    .attr("class", "name")
+                    .attr("dx", 0)
+                    .style("fill", "white")
+                    .attr("text-anchor", "middle")
+                    .style("opacity", function (d) { if (d.radius == 0) return 0.05; else return 1; })
+                    .text(function (d) { return (d.name); })
+                    .on("click", click);
+        node.append("text")
+                    .attr("class", "number")
+                    .attr("dx", 0)
+                    .style("fill", "white")
+                    .attr("text-anchor", "middle")
+                    .style("opacity", function (d) { if (d.radius == 0) return 0.05; else return 1; })
+                    .text(function (d) { return (d.number); })
+                    .on("click", click);
+        
+
+        
+                 
+                 
+        
+         //
+        var clicked = null;
+        var clickedPrevious = null;
+        var textDraw;
+        drawIndex();
+        zoom(1); //위에서 정의되지 않은 성질들은 zoom 안에서 정의한다.
+        
+        
+
+        function drawIndex() {
+
+            var indexArea = svg.append("g")
+                                .attr("class", "indexArea");
+
+            var textUnit = width / 60;
+
+            indexArea.append("text")
+                    .attr("transform", "translate (" + (width / 2) + "," + ((textUnit * 1.8)+10) + ")")
+                  .attr("class", "R_button")
+                  .style("fill", "#a0a0a0")
+                  .attr("text-anchor", "middle")
+                  .style("font-size", (textUnit*1.8)+"px")
+                  .style("opacity", 1)
+                  .text("[대한민국:우즈베키스탄] 전반전 패스 분포도")
+                  
+
+            indexArea.append("text")
+                .attr("transform", "translate (10," + (height - 30) + ")")
+                     .attr("class", "description")
+                     .style("fill", "#808080")
+                     .attr("text-anchor", "start")
+                     .style("font-size", (textUnit * 1.5) + "px")
+                     .style("opacity", 1)
+                     .text("선수를 클릭해보세요");
+
+            indexArea.append("text")
+                .attr("transform", "translate (" + (width - 10) + "," + (height - 30) + ")")
+                    .attr("class", "description")
+                    .style("fill", "#e0e0e0")
+                    .attr("text-anchor", "end")
+                    .style("font-size", (textUnit * 2.5) + "px")
+                    .style("opacity", 1)
+                    .text("클릭! 전체 패스 보기")
+                    .on("click", click);
+        }
+
+
+        //매 프레임 움직임 정의
+        function tick() {
+
+            //console.log(d3es);
+            var easeType = "bounce"; //back, elastic, cubic
+
+            link.attr("d", lineDraw)
+                .attr("stroke-dasharray", function (d) {
+                    var totalLength = this.getTotalLength();
+                    //console.log(totalLength);
+                    return (totalLength - d3esT * (radiusScale(d.target.radius + targetBuffer) + arrowScale(d.value) * arrowSize)) + " " + (totalLength);  //첫번째 수는 선의 길이, 두번째 수는 대쉬 사이의 길이
+                })
+                .transition()
+                .duration(2000)
+                .ease(easeType)
+                .attrTween("stroke-dashoffset", function (d) {
+                    var marginalLength = this.getTotalLength() - d3esT * (radiusScale(d.target.radius + targetBuffer) + arrowScale(d.value) * arrowSize);
+                    //var i = d3.interpolate(0, totalLength);
+                    return function (t) {
+                        return marginalLength * (1 - t);
+                    }
+                });
+
+            arrowHead
+                .transition()
+                .duration(2000)
+                .ease(easeType)
+                .attrTween("transform", function (d) {
+                    var thisPath = svg.select("#" + "path" + d.source.name.replace(/[\s()]/gi, "") + d.target.name.replace(/[\s()]/gi, ""));
+                    var marginalLength = thisPath.node().getTotalLength() - d3esT * (radiusScale(d.target.radius + targetBuffer) + arrowScale(d.value) * arrowSize);
+                    var t0 = 0;
+                    return function (t) {
+                        var p0 = thisPath.node().getPointAtLength(t0 * marginalLength);//previous point
+                        var p = thisPath.node().getPointAtLength(t * marginalLength);
+                        var angle = Math.atan2(p.y - p0.y, p.x - p0.x) * 180 / Math.PI;//angle for tangent
+                        if (t > t0) {
+                            t0 = t;
+                            return "translate(" + p.x + "," + p.y + ") scale(" + d3esT * arrowScale(d.value) + ") rotate(" + angle + ")";
+                        } else { //bounce 같은 easement의 경우 화살표가 뒤집어지지 않도록 각도에 180을 더한다.
+                            t0 = t;
+                            return "translate(" + p.x + "," + p.y + ") scale(" + d3esT * arrowScale(d.value) + ") rotate(" + (angle + 180) + ")";
+                        }
+                    }
+                });
+
+            node.attr("transform", function (d) {
+                d.fixed = true; // 이것을 주석처리하면 drag 같은 사용자 인풋이 있을때, 위치를 자동적으로 계산. 즉 고정위치가 풀어짐
+                return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")";
+            });
+
+
+            var list = svg.selectAll(".lines").filter(".on");
+
+            //console.log(list[0]);
+            
+            if (clicked != clickedPrevious) {
+
+                var showFrqcy = frqcy.selectAll(".frq")
+                                .data(list[0], function (d) { return d.id; })
+
+                textDraw = showFrqcy.enter().append("text")
+                           .attr("class", "frq")
+                           .style("text-anchor", "middle")
+                           .style("font-size", function (d) { return (frqScale(d.__data__.value) * d3esT) + "px"; })
+                           .style("fill", "white")
+                           // .style("stroke", "#505050")
+                            //.style("stroke-width","1")
+                           
+                           //.append("textPath")
+                            
+                           //.attr("xlink:href", function (d) { return "#" + d.id; })
+                           .text(function (d) { return d.__data__.value });
+
+                showFrqcy.exit().remove();
+                clickedPrevious = clicked;
+            };
+            
+            
+            if (textDraw != null) { //처음은 건너뛴다.
+                textDraw.attr("dy", "0em").transition()
+                        .duration(2000)
+                        .ease(easeType)
+                        .attrTween("transform", function (d) {
+                            var thisPath = svg.select("#" + "path" + d.__data__.source.name.replace(/[\s()]/gi, "") + d.__data__.target.name.replace(/[\s()]/gi, ""));
+                            var marginalLength = thisPath.node().getTotalLength() - d3esT * (frqScale(d.__data__.value) + radiusScale(d.__data__.target.radius + targetBuffer) + arrowScale(d.__data__.value) * arrowSize);
+                            var t0 = 0;
+                            return function (t) {
+                                var p0 = thisPath.node().getPointAtLength(t0 * marginalLength);//previous point
+                                var p = thisPath.node().getPointAtLength(t * marginalLength);
+                                var angle = Math.atan2(p.y - p0.y, p.x - p0.x) * 180 / Math.PI;//angle for tangent
+                                return "translate(" + p.x + "," + p.y + ")  rotate("+((t-1)*90)+")";
+                            }
+                        });
+                
+
+
+
+                /*
+                        .attrTween("startOffset", function (d) {
+                            return function (t) {
+                                return (80 * t) + "%";
+                            };
+                        })
+                        .attrTween("rotate", function (d) {
+                            return function (t) {
+                                return t *24;
+                            };
+                        });*/
+            }
+
+            function lineDraw(d) {
+
+                var R = Math.sqrt(lineWidthScale(d.value) * 10);
+                var sx = xScale(d.source.x);
+                var tx = xScale(d.target.x);
+                var sy = yScale(d.source.y);
+                var ty = yScale(d.target.y);
+
+                var xx = sx + ((tx - sx) * Math.cos(R * Math.PI / 180) - (ty - sy) * Math.sin(R * Math.PI / 180));
+                var yy = sy + ((tx - sx) * Math.sin(R * Math.PI / 180) + (ty - sy) * Math.cos(R * Math.PI / 180));
+                //console.log(xx + "," + yy);
+                var linkData2 = [{ x: sx, y: sy }, { x: xx, y: yy }, { x: tx, y: ty }];
+
+                var linetype = ["linear", "step-before", "step-after", "basis", "basis-open", //0,1,2,3,4
+                    "basis-closed", "bundle", "cardinal", "cardinal-open", "cardinal-closed", //5,6,7,8,9
+                    "monotone"];                                                                 //10
+
+                //이 부분 조정을 통해 곡선 곡률 조정
+                var line = d3.svg.line()
+                        .interpolate(linetype[3]) //bundle
+                        .tension(1.6)
+                        .x(function (d) { return d.x; })
+                        .y(function (d) { return d.y; });
+
+                return line(linkData2);
+            }
+
+
+        };
+
+      
+        function click(d) {
+
+            
+
+            if (d == null) d = 1; //전체패스보기를 위한 부분
+            clicked = d.name;
+            var multiClick = false; //이부분을 true로 두면 multiClick 가능하게 됨
+
+            if (!multiClick) {
+                svg.selectAll(".lines").attr("class", function (d) {
+                    return "lines " + d.source.name + " off";
+                });
+
+                svg.selectAll(".arrowHead").attr("class", function (d) {
+                    return "arrowHead " + d.source.name + " off";
+                });
+            }
+
+            svg.selectAll(".lines").filter("." + d.name)
+                .attr("class", function () {
+
+                    if (d3.select(this).attr("class").indexOf("on") != -1) {
+                        return "lines " + d.name + " off";
+                    } else {
+                        return "lines " + d.name + " on";
+                    }
+                });
+
+            svg.selectAll(".arrowHead").filter("." + d.name)
+                .attr("class", function () {
+
+                    if (d3.select(this).attr("class").indexOf("on") != -1) {
+                        return "arrowHead " + d.name + " off";
+                    } else {
+                        return "arrowHead " + d.name + " on";
+                    }
+                });
+
+            //console.log(svg.selectAll(".on")[0].length);
+                
+            if (svg.selectAll(".on")[0].length == 0) {  //만약 모두 off 상태이면 디폴트이므로
+                
+                svg.selectAll(".lines")
+                    .attr("stroke", function (d) { return color[d.source.group]; })
+                    .attr("stroke-opacity", function (d) { return OpacityScale(d.value); });
+
+                svg.selectAll(".arrowHead")
+                    .attr("fill", function (d, i) { return color[d.source.group]; })
+                    .attr("opacity", 1)
+
+            } else {
+                svg.selectAll(".lines").filter(".on")
+                    .attr("stroke", function (d) { return color[d.source.group]; })
+                    .attr("stroke-opacity", 1)  //그리지 않음. 화살표 가이드 역할만
+                ;
+
+                svg.selectAll(".lines").filter(".off")
+                    .attr("stroke", "black")
+                    .attr("stroke-opacity", 0.3)
+                ;
+
+                svg.selectAll(".arrowHead").filter(".off")
+                    .attr("fill", "black")
+                    .attr("opacity", 0.3)
+                ;
+
+                svg.selectAll(".arrowHead").filter(".on")
+                    .attr("fill", function (d, i) { return color[d.source.group]; })
+                    .attr("opacity", 1)
+                ;
+            }
+
+            tick();
+
+        }
+
+        
+    }; //windows.onload
+    
+</script>
+</body>
+</html>
