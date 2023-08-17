@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title></title>
+<style>
+
+
+svg text {
+            font-family:YDIYGO320, '08SeoulNamsan B', 돋움체,Arial;         
+            
+        }
+
+        .cir {
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+
+        
+        .lines {
+            fill : none;
+            stroke-opacity: .6;
+
+            transition: opacity 250ms;
+            -webkit-transition: opacity 250ms;
+            -moz-transition: opacity 250ms;
+        }
+
+        
+
+
+    </style>
+ 
+
+</head>
+ 
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="data.js"></script>
+
+<script>
+        
+
+        //해당 프레임에 맞게 이 부분을 조정하면 됨
+        var width = 1200,
+            height = 700;
+        
+        var color = ["#4682B4", "#FF8C00", "#9ACD32", "#8B0000", "#2F4F4F", "#4B0082", "#006400", "#CD5C5C", "#FFD700",
+            "#A0522D", "#708090", "#008080", "#800080", "#6B8E23", "#DC143C", "#DB7093", "#BDB76B", "#191970", "#D2691E",
+            "#1E90FF", "#5F9EA0", "#BC8F8F", "#FFA07A", "#FF4500", "#DEB887", "#32CD32", "#7B68EE", "#008080", "#6C0000",
+            "#655552", "#A02E19", "#A87563", "#A0522D", "#EC6527", "#EC6400", "#765338", "#AE5000", "#F5A300", "#946700",
+            "#E1AF00"];
+
+        var distanceScale = d3.scale.pow().exponent(0.4);
+        var lineColorScale = d3.scale.linear();
+        var radiusScale = d3.scale.pow().exponent(1);
+        var textScale = d3.scale.pow().exponent(1);
+        var chargeScale = d3.scale.linear();
+        
+
+        var xScale = d3.scale.linear()
+                .domain([0, width])
+                 .range([0, width]);
+
+        var yScale = d3.scale.linear()
+            .domain([0, height])
+           .range([0, height]);
+        var zoomer = d3.behavior.zoom().x(xScale).y(yScale).scaleExtent([0.1, 8]).on("zoom", zoom);
+        function zoom() {
+            tick();
+        };
+
+        var drag = d3.behavior.drag()
+                .origin(function (d) { return d; })
+                 .on("dragstart", dragstarted)
+                .on("drag", dragged)
+                .on("dragend", dragended);
+
+        function dragstarted(d) {
+            d3.event.sourceEvent.stopPropagation();
+
+            d.fixed |= 2;
+        }
+        function dragged(d) {
+
+            var mouse = d3.mouse(svg.node());
+            d.x = xScale.invert(mouse[0]);
+            d.y = yScale.invert(mouse[1]);
+            d.px = d.x;
+            d.py = d.y;
+            force.resume();
+        }
+
+        function dragended(d) {
+
+            d.fixed &= ~6;
+        }
+
+        var force = d3.layout.force()
+            .charge(-120)
+            .linkDistance(30)
+            .gravity(gravity)
+            .friction(friction)
+            .size([width, height]);
+
+        var svg = d3.select("body").append("svg")        //"body" 대신 적절한 class나 id를 넣으면 해당 태그에 삽입됨. class의 경우 ".class" 의 형식으로. id의 경우 "#id"의 형식으로.
+            .attr("width", width)
+            .attr("height", height);
+
+        svg.call(zoomer);
+
+
+
+        force
+            .nodes(graph.nodes)
+            .links(graph.links)
+            .start();
+        
+        distanceScale.domain([0, d3.max(graph.links, function (d) { return d.value; })])
+                 .range([150, 15]);
+        lineColorScale.domain([0, d3.max(graph.links, function (d) { return d.value; })])
+                 .range([255, 50]);
+        radiusScale.domain([d3.min(graph.nodes, function (d) { return d.radius; }), d3.max(graph.nodes, function (d) { return d.radius; })])
+                     .range([5, 20]);
+        textScale.domain([d3.min(graph.nodes, function (d) { return d.radius; }), d3.max(graph.nodes, function (d) { return d.radius; })])
+                     .range([15, 30]);
+        chargeScale.domain([100, 200])
+                   .range([-400, -150]);
+        force.charge(chargeScale(graph.nodes.length));
+
+
+        var link = svg.selectAll("line")
+            .data(graph.links);
+
+        link.enter()
+            .insert("line", "g")
+            .attr("class", "lines")
+            .style("stroke", function (d) { return d3.rgb(lineColorScale(d.value), lineColorScale(d.value), lineColorScale(d.value)); })
+            .style("stroke-width", function (d) { return Math.sqrt(d.value * 10); })
+            .append("title")
+            .text(function (d) { return (d.value); })
+             .style("font-size", "8pt");
+
+        var node = svg.selectAll(".node")
+            .data(graph.nodes)
+          .enter().append("g")
+            .attr("class", "node")
+            .call(drag);
+
+        node.append("circle")
+            .attr("class", "cir")
+            .attr("r", function (d) { if (d.radius == 0) return 2; else return radiusScale(d.radius); })
+            .style("fill", function (d) { return color[d.group]; });
+
+        node.append("text")
+                  .attr("class", "cText")
+                  .attr("dx", 8)
+                  .attr("dy", ".35em")
+                  .style("font-size", function (d) { return textScale(d.radius) + "px" })
+                  .style("opacity", function (d) { if (d.radius == 0) return 0.05; else return 1; })
+                  .text(function (d) { return (d.name); });
+        
+
+        force.on("tick", tick);
+
+        function tick() {
+            link.attr("x1", function (d) { return xScale(d.source.x); })
+                .attr("y1", function (d) { return yScale(d.source.y); })
+                .attr("x2", function (d) { return xScale(d.target.x); })
+                .attr("y2", function (d) { return yScale(d.target.y); });
+
+            node.attr("transform", function (d) {
+                return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")";
+            });
+
+
+        };
+</script>
+
+</body>
+</html>

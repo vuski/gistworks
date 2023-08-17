@@ -1,0 +1,221 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>공직자 재산 총합</title>
+    <script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no" />
+
+    <style type="text/css">
+        svg {
+            background-image: url(background.png);
+            background-position-x: 20px;
+            background-position-y: 20px;
+            background-size: calc(100% - 40px);
+            background-repeat: no-repeat;
+        }
+
+        body {
+            margin: 0px;
+        }
+    </style>
+    <script type="text/javascript">
+
+            window.onload = function () {
+
+                //Width and height
+
+                var opa = 0.1;
+                var w = window,
+                    d = document,
+                    e = d.documentElement,
+                    g = d.getElementsByTagName('body')[0],
+                    w = w.innerWidth || e.clientWidth || g.clientWidth,
+                    //h = w.innerHeight || e.clientHeight || g.clientHeight,
+                    h = w*1.18;
+                var scale;
+
+
+                var svg = d3.select("#wrap_middle")
+                                .append("svg")
+                                .attr("width", w)
+                                .attr("height", h);
+
+
+                var text = svg.append("g")
+                    .attr("class", "text")
+                    .attr("transform", "translate(" + (w / 2) + "," + (w - 20) + ")");
+
+
+
+                d3.csv("sumAll_2017.csv", function (d) {
+
+                   
+                    return {
+                        name: d.name,
+                        sum : +d.sum
+                    };
+                }, function (data) {
+
+                    scale = d3.scaleLinear()
+                           .domain([0, d3.max(data, function (d) {
+                               return Math.sqrt(d.sum);
+                           })])
+                           .range([0, w / 2 - 20]);
+
+                    var dataPlus = [];
+
+                    for (var i = 0 ; i < data.length ; i++) {
+                        var d = data[i];
+                        if (d.sum > 0) {
+                            dataPlus.push({ name: d.name, sum: d.sum });
+                        }
+                    }
+
+                    dataPlus.sort(function (a, b) {
+                        var aa = a.sum;
+                        var bb = b.sum;
+                        return (aa < bb) ? 1 : (aa > bb ? -1 : 0);
+                    });
+
+                    var rPlus = [];
+                    for (var i = 0 ; i < dataPlus.length ; i++) {
+                        var d = dataPlus[i];
+                        rPlus.push(scale(Math.sqrt(d.sum)));
+                    }
+
+                    var dataMinus = [];
+
+                    for (var i = 0 ; i < data.length ; i++) {
+                        var d = data[i];
+                        if (d.sum < 0) {
+                            dataMinus.push({ name: d.name, sum: d.sum });
+                        }
+                    }
+
+                    dataMinus.sort(function (a, b) {
+                        var aa = a.sum;
+                        var bb = b.sum;
+                        return (aa > bb) ? 1 : (aa < bb ? -1 : 0);
+                    });
+
+                    var rMinus = [];
+                    for (var i = 0 ; i < dataMinus.length ; i++) {
+                        var d = dataMinus[i];
+                        rMinus.push(scale(Math.sqrt(Math.abs(d.sum))));
+                    }
+                    
+
+                    svg.on("mousemove", mousemove)
+                        .on("mouseout", cirMouseout1)
+                          .on("touchmove", mousemove);
+                          //.on("touchend", cirMouseout1);
+
+                    function mousemove(d) {
+                        text.selectAll("*").remove();
+                        var x = !d3.touch(this) ? d3.mouse(this)[0] - (w / 2) : d3.touch(this)[0] - (w / 2);
+                        var y = !d3.touch(this) ? d3.mouse(this)[1] - (w - 20) : d3.touch(this)[1] - (w - 20);
+
+                        if (y <= 0) {
+                            
+                            for (var i = rPlus.length - 1 ; i >= 0 ; i--) {
+
+                                var distJudge = x * x + 2 * rPlus[i] * y + y * y;
+                                
+                                if (distJudge < 0) {
+                                    text
+                                       .append("circle")
+                                       .attr("class", "sum")
+                                       .attr("cx", 0)
+                                       .attr("cy", -1 * scale(Math.sqrt(dataPlus[i].sum)))
+                                       .attr("r", scale(Math.sqrt(Math.abs(dataPlus[i].sum))))
+                                       .attr("stroke", "#e0aacc")
+                                       .attr("stroke-width", 2)
+                                       .attr("fill", "none");
+                                    text
+                                        .append("text")
+                                        .text(dataPlus[i].name.split("|")[2] + " | " + dataPlus[i].name.split("|")[0] + " | " + dataPlus[i].name.split("|")[1])
+                                        .attr("dx", 10 - (w / 2))
+                                        .attr("dy", d3.mouse(this)[1] - (w - 20))
+                                        .attr("text-anchor", "start")
+                                        .style("font-size", "1em")
+                                        .attr("fill", "darkred")
+                                        .attr("font-family", "맑은 고딕")
+                                    text
+                                       .append("text")
+                                       .text(d3.format("-0,.1f")(dataPlus[i].sum / 100000) + "억")
+                                       .attr("dx", 10 - (w / 2))
+                                       .attr("dy", d3.mouse(this)[1] - (w - 20) + 30)
+                                       .attr("text-anchor", "start")
+                                       .style("font-size", "1.5em")
+                                       .attr("fill", "darkred")
+                                      .attr("font-family", "맑은 고딕");
+                                    break;
+                                }
+                            }
+                        } else {
+
+                            for (var i = rMinus.length - 1 ; i >= 0 ; i--) {
+
+                                var distJudge = x * x - 2 * rMinus[i] * y + y * y;
+                              
+                                if (distJudge < 0) {
+                                    text
+                                       .append("circle")
+                                       .attr("class", "sum")
+                                       .attr("cx", 0)
+                                       .attr("cy", scale(Math.sqrt(Math.abs(dataMinus[i].sum))))
+                                       .attr("r", scale(Math.sqrt(Math.abs(dataMinus[i].sum))))
+                                       .attr("stroke", "black")
+                                       .attr("stroke-width", 2)
+                                       .attr("fill", "none");
+                                    text
+                                        .append("text")
+                                        .text(dataMinus[i].name.split("|")[2] + " | " + dataMinus[i].name.split("|")[0] + " | " + dataMinus[i].name.split("|")[1])
+                                        .attr("dx", 10 - (w / 2))
+                                        .attr("dy", d3.mouse(this)[1] - (w - 20) -30)
+                                        .attr("text-anchor", "start")
+                                        .style("font-size", "1em")
+                                        .attr("fill", "black")
+                                        .attr("font-family", "맑은 고딕")
+                                    text
+                                       .append("text")
+                                       .text(d3.format("-0,.1f")(dataMinus[i].sum / 100000) + "억")
+                                       .attr("dx", 10 - (w / 2))
+                                       .attr("dy", d3.mouse(this)[1] - (w - 20) )
+                                       .attr("text-anchor", "start")
+                                       .style("font-size", "1.5em")
+                                       .attr("fill", "black")
+                                      .attr("font-family", "맑은 고딕");
+                                    break;
+                                }
+                            }
+
+
+
+                        }
+                    }
+
+                   
+                    function cirMouseout1(d) {
+                        text.selectAll("*").remove();
+                    }
+
+
+                });
+
+
+
+            }
+    </script>
+</head>
+<body>
+    <header id="main_header"></header>
+    <div id="wrap_middle">
+    </div>
+    <div id="wrap_over">
+    </div>
+</body>
+</html>

@@ -1,0 +1,355 @@
+﻿<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+<style>
+
+
+svg text {
+            font-family:YDIYGO320, '08SeoulNamsan B', 돋움체,Arial;         
+            
+        }
+
+
+        
+        
+    </style>
+ 
+
+</head>
+ 
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+    <script>
+
+
+        var gravity = 0.03;
+        var friction = 0.8;
+        var graph = {
+            "nodes": [
+            { "name": "1 Iker CASILLAS(RM)", "radius": 21, "group": 0 },
+            { "name": "3 Gerard PIQUE(FCB)", "radius": 107, "group": 1 },
+            { "name": "6 Andres INIESTA(FCB)", "radius": 134, "group": 2 },
+            { "name": "8 Xavi HERNANDEZ(FCB)", "radius": 134, "group": 3 },
+            { "name": "14 Xabi ALONSO(RM)", "radius": 113, "group": 4 },
+            { "name": "15 Sergio Ramos(RM)", "radius": 102, "group": 5 },
+            { "name": "16 Sergio BUSQUETS(FCB)", "radius": 123, "group": 6 },
+            { "name": "18 Jordi ALBA(FCB)", "radius": 98, "group": 7 },
+            { "name": "19 Diego COSTA(AM)", "radius": 34, "group": 8 },
+            { "name": "21 David SILVA(MCT)", "radius": 87, "group": 9},
+            { "name": "22 Cesar AZPILICUETA(CFC)", "radius": 75, "group": 10 },
+            { "name": "shots", "radius": 8, "group": 11 },
+            ],
+            "links": [
+            { "source": 0, "target": 1, "value": 5 },
+            { "source": 0, "target": 3, "value": 1 },
+            { "source": 0, "target": 5, "value": 4 },
+            { "source": 0, "target": 6, "value": 1 },
+            { "source": 0, "target": 10, "value": 3 },
+            { "source": 1, "target": 0, "value": 2 },
+            { "source": 1, "target": 2, "value": 3 },
+            { "source": 1, "target": 3, "value": 11 },
+            { "source": 1, "target": 4, "value": 4 },
+            { "source": 1, "target": 5, "value": 5 },
+            { "source": 1, "target": 6, "value": 17 },
+            { "source": 1, "target": 7, "value": 3 },
+            { "source": 1, "target": 8, "value": 2 },
+            { "source": 1, "target": 9, "value": 4 },
+            { "source": 1, "target": 10, "value": 4 },
+            { "source": 2, "target": 1, "value": 2 },
+            { "source": 2, "target": 3, "value": 8 },
+            { "source": 2, "target": 4, "value": 9 },
+            { "source": 2, "target": 5, "value": 3 },
+            { "source": 2, "target": 6, "value": 2 },
+            { "source": 2, "target": 7, "value": 8 },
+            { "source": 2, "target": 8, "value": 5 },
+            { "source": 2, "target": 9, "value": 17 },
+            { "source": 2, "target": 10, "value": 4 },
+            { "source": 2, "target": 11, "value": 2 },
+            { "source": 3, "target": 1, "value": 8 },
+            { "source": 3, "target": 2, "value": 11 },
+            { "source": 3, "target": 4, "value": 11 },
+            { "source": 3, "target": 5, "value": 9 },
+            { "source": 3, "target": 6, "value": 10 },
+            { "source": 3, "target": 7, "value": 4 },
+            { "source": 3, "target": 8, "value": 2 },
+            { "source": 3, "target": 9, "value": 7 },
+            { "source": 3, "target": 10, "value": 8 },
+            { "source": 4, "target": 1, "value": 5 },
+            { "source": 4, "target": 2, "value": 15 },
+            { "source": 4, "target": 3, "value": 8 },
+            { "source": 4, "target": 5, "value": 4 },
+            { "source": 4, "target": 6, "value": 4 },
+            { "source": 4, "target": 7, "value": 9 },
+            { "source": 4, "target": 9, "value": 3 },
+            { "source": 4, "target": 10, "value": 4 },
+            { "source": 4, "target": 11, "value": 1 },
+            { "source": 5, "target": 0, "value": 1 },
+            { "source": 5, "target": 1, "value": 10 },
+            { "source": 5, "target": 2, "value": 7 },
+            { "source": 5, "target": 3, "value": 5 },
+            { "source": 5, "target": 4, "value": 6 },
+            { "source": 5, "target": 6, "value": 8 },
+            { "source": 5, "target": 7, "value": 12 },
+            { "source": 5, "target": 8, "value": 1 },
+            { "source": 5, "target": 9, "value": 1 },
+            { "source": 5, "target": 10, "value": 2 },
+            { "source": 5, "target": 11, "value": 1 },
+            { "source": 6, "target": 0, "value": 2 },
+            { "source": 6, "target": 1, "value": 6 },
+            { "source": 6, "target": 2, "value": 12 },
+            { "source": 6, "target": 3, "value": 8 },
+            { "source": 6, "target": 4, "value": 12 },
+            { "source": 6, "target": 5, "value": 9 },
+            { "source": 6, "target": 7, "value": 4 },
+            { "source": 6, "target": 8, "value": 1 },
+            { "source": 6, "target": 9, "value": 3 },
+            { "source": 6, "target": 10, "value": 7 },
+            { "source": 7, "target": 1, "value": 3 },
+            { "source": 7, "target": 2, "value": 11 },
+            { "source": 7, "target": 3, "value": 5 },
+            { "source": 7, "target": 4, "value": 11 },
+            { "source": 7, "target": 5, "value": 11 },
+            { "source": 7, "target": 6, "value": 6 },
+            { "source": 7, "target": 8, "value": 1 },
+            { "source": 7, "target": 9, "value": 4 },
+            { "source": 7, "target": 10, "value": 1 },
+            { "source": 8, "target": 1, "value": 1 },
+            { "source": 8, "target": 2, "value": 3 },
+            { "source": 8, "target": 3, "value": 4 },
+            { "source": 8, "target": 6, "value": 1 },
+            { "source": 8, "target": 7, "value": 3 },
+            { "source": 8, "target": 10, "value": 1 },
+            { "source": 8, "target": 11, "value": 2 },
+            { "source": 9, "target": 1, "value": 3 },
+            { "source": 9, "target": 2, "value": 10 },
+            { "source": 9, "target": 3, "value": 10 },
+            { "source": 9, "target": 4, "value": 6 },
+            { "source": 9, "target": 5, "value": 2 },
+            { "source": 9, "target": 6, "value": 1 },
+            { "source": 9, "target": 7, "value": 2 },
+            { "source": 9, "target": 8, "value": 3 },
+            { "source": 9, "target": 10, "value": 2 },
+            { "source": 9, "target": 11, "value": 2 },
+            { "source": 10, "target": 0, "value": 2 },
+            { "source": 10, "target": 1, "value": 9 },
+            { "source": 10, "target": 2, "value": 2 },
+            { "source": 10, "target": 3, "value": 4 },
+            { "source": 10, "target": 4, "value": 1 },
+            { "source": 10, "target": 5, "value": 1 },
+            { "source": 10, "target": 6, "value": 9 },
+            { "source": 10, "target": 8, "value": 4 },
+            { "source": 10, "target": 9, "value": 7 },
+            ]
+        };
+
+        //window extent
+        var width = 1600,
+            height = 900;
+        
+        //위의 그룹별로 이 컬러 지정
+        var color = ["#4682B4", "#FF8C00", "#9ACD32", "#8B0000", "#2F4F4F", "#4B0082", "#006400", "#CD5C5C", "#FFD700",
+            "#A0522D", "#708090", "#008080", "#800080", "#6B8E23", "#DC143C", "#DB7093", "#BDB76B", "#191970", "#D2691E",
+            "#1E90FF", "#5F9EA0", "#BC8F8F", "#FFA07A", "#FF4500", "#DEB887", "#32CD32", "#7B68EE", "#008080", "#6C0000",
+            "#655552", "#A02E19", "#A87563", "#A0522D", "#EC6527", "#EC6400", "#765338", "#AE5000", "#F5A300", "#946700",
+            "#E1AF00"];
+
+        //초기 스케일 셋팅
+        var radiusScale = d3.scale.pow().exponent(1);
+        var textScale = d3.scale.pow().exponent(1);
+        
+        //zoom 을 위한 정의
+        var xScale = d3.scale.linear()
+                .domain([0, width])
+                 .range([0, width]);
+
+        var yScale = d3.scale.linear()
+            .domain([0, height])
+           .range([0, height]);
+        var zoomer = d3.behavior.zoom().x(xScale).y(yScale).scaleExtent([0.1, 15]).on("zoom", zoom);
+        function zoom() {
+            tick();
+        };
+
+        //드래그를 위한 정의
+        var drag = d3.behavior.drag()
+                .origin(function (d) { return d; })
+                .on("dragstart", dragstarted)
+                .on("drag", dragged)
+                .on("dragend", dragended);
+        function dragstarted(d) {
+            d3.event.sourceEvent.stopPropagation();
+            d.fixed |= 2;
+            force.stop();
+        }
+        function dragged(d) {
+            var mouse = d3.mouse(svg.node());
+            d.x = xScale.invert(mouse[0]);
+            d.y = yScale.invert(mouse[1]);
+            d.px = d.x;
+            d.py = d.y;
+            tick();
+        }
+        function dragended(d) {
+            d.fixed &= ~6;
+        }
+
+
+        //force layout 정의
+        var force = d3.layout.force()
+            .charge(-120)
+            .linkDistance(30)
+            .gravity(gravity)
+            .friction(friction)
+            .size([width, height]);
+
+
+        var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+                
+        svg.call(zoomer);
+
+        //화살표를 위한 곳
+        svg.append('defs');
+
+        var edge = svg.append("g")
+                        .attr("class", "edge")
+                        .attr("fill", "none")
+                        ;
+
+        //기본 데이터 링크
+        force
+            .nodes(graph.nodes)
+            .links(graph.links)
+            .start();
+        
+        //스케일 정의
+        radiusScale.domain([d3.min(graph.nodes, function (d) { return d.radius; }), d3.max(graph.nodes, function (d) { return d.radius; })])
+                     .range([5, 20]);
+        textScale.domain([d3.min(graph.nodes, function (d) { return d.radius; }), d3.max(graph.nodes, function (d) { return d.radius; })])
+                     .range([10, 30]);
+        
+
+
+        //라인 그리기
+        var pathMarker = svg.select("defs").selectAll("marker")
+                    .data(graph.links, function (d) { return d.source.name + d.target.name + d.value; });
+        pathMarker.enter()
+            .append("marker")
+            .attr("id", function (d, i) { return "arrowHead" + d.source.name.replace(/[\s()]/gi, "") + d.target.name.replace(/[\s()]/gi, ""); })
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 10)
+            .attr("refY", 0)
+            .attr("markerWidth", 2)
+            .attr("markerHeight", 4)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("class", "markerPath")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", function (d, i) { return color[d.source.group]; });
+
+        pathMarker.exit().remove();
+
+        var link = edge.selectAll(".lines")
+                    .data(graph.links, function (d) { return d.source.name + d.target.name + d.value; });
+
+        //line을 두번 그리는 이유는, 일러스트레이터에서 svg import 시, arrow의 path역할을 하는 link가 표시되지 않기 때문에.
+        var link2 = edge.selectAll(".lines2")
+                   .data(graph.links, function (d) { return d.source.name + d.target.name + d.value; });
+
+        link.enter().insert("path", "g")
+            .attr("class", "lines")
+            .attr("marker-mid", function (d, i) { return "url(#arrowHead" + d.source.name.replace(/[\s()]/gi, "") + d.target.name.replace(/[\s()]/gi, "") + ")"; })
+            .attr("stroke", function (d) { return color[d.source.group]; })
+            .attr("stroke-width", function (d) { return d.value + "px"; })
+            .attr("stroke-opacity", 0);  //그리지 않음. 화살표 가이드 역할만
+
+        link2.enter().insert("path", "g")
+            .attr("class", "lines2")
+            .attr("stroke", function (d) { return color[d.source.group]; })
+            .attr("stroke-width", function (d) { return d.value + "px"; })
+            .attr("stroke-opacity",0.6);
+           
+        link.exit().remove();
+        link2.exit().remove();
+
+        //노드 그리기
+        var node = svg.selectAll(".node")
+            .data(graph.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .call(drag);
+
+        node.append("circle")
+            .attr("class", "cir")
+            .attr("r", function (d) { if (d.radius == 0) return 2; else return radiusScale(d.radius); })
+            .attr("stroke", "#fff")
+            .attr("stroke-width","2px")
+            .style("fill", function (d) { return color[d.group]; });
+
+        node.append("text")
+                  .attr("class", "cText")
+                  .attr("dx", 8)
+                  .attr("dy", ".35em")
+                  .style("font-size", function (d) { return textScale(d.radius) + "px" })
+                  .style("opacity", function (d) { if (d.radius == 0) return 0.05; else return 1; })
+                  .text(function (d) { return (d.name); });
+        
+
+        //매 프레임 움직임 정의
+        force.on("tick", tick);
+
+        function tick() {
+
+            link.attr("d", lineDraw);
+            link.attr("x1", function (d) { return xScale(d.source.x); })
+                .attr("y1", function (d) { return yScale(d.source.y); })
+                .attr("x2", function (d) { return xScale(d.target.x); })
+                .attr("y2", function (d) { return yScale(d.target.y); });
+
+            link2.attr("d", lineDraw);
+            link2.attr("x1", function (d) { return xScale(d.source.x); })
+                .attr("y1", function (d) { return yScale(d.source.y); })
+                .attr("x2", function (d) { return xScale(d.target.x); })
+                .attr("y2", function (d) { return yScale(d.target.y); });
+
+            node.attr("transform", function (d) {
+                return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")";
+            });
+
+            function lineDraw(d) {
+
+                    var R = 5;
+                    var sx = xScale(d.source.x);
+                    var tx = xScale(d.target.x);
+                    var sy = yScale(d.source.y);
+                    var ty = yScale(d.target.y);
+                    var xx = sx + ((tx - sx) * Math.cos(R * Math.PI / 180) - (ty - sy) * Math.sin(R * Math.PI / 180));
+                    var yy = sy + ((tx - sx) * Math.sin(R * Math.PI / 180) + (ty - sy) * Math.cos(R * Math.PI / 180));
+
+                    var linkData2 = [{ x: sx, y: sy }, { x: xx, y: yy }, { x: tx, y: ty }];
+
+                    //이 부분 조정을 통해 곡선 곡률 조정
+                    var line = d3.svg.line()
+                         .interpolate("bundle")
+                         .tension(1.1)
+                        .x(function (d) { return d.x; })
+                        .y(function (d) { return d.y; });
+                    return line(linkData2);
+            }
+
+
+        };
+
+        //스페이스 바 누르면 멈춤
+        window.onkeypress = function () {
+            if (force.alpha() != 0) {
+                force.stop();
+
+            } else force.resume();
+        }
+
+</script>
+
+</body>
+</html>

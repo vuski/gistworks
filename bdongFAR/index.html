@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+     <style>
+         
+
+         
+        
+    </style>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="farData.js"></script>
+
+    <script>
+
+        window.onload = function () {
+
+            var w = 1800, h = 900;
+
+            var projection = d3.geo.mercator()
+                .center([126.980810, 37.532964])
+                .scale(100000)
+                //.clipAngle(90)
+                .translate([w / 2, h / 2]);
+                 
+            var path = d3.geo.path()               
+                .projection(projection);
+
+            var zoomer = d3.behavior.zoom().translate([0, 0])
+                    .scale(1)
+                    .scaleExtent([0.5, 50]).on("zoom", zoom);
+
+            var farMap = d3.map();
+
+            for (var i = 0; i < farData.length ; i++) {
+                farMap.set(farData[i][0], farData[i][1]);
+            }
+
+
+            var svg = d3.select("#wrap_middle")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h)
+                .call(zoomer);
+
+            var mapFeature = svg.append("g");
+
+            var color = [[247, 251, 255],
+            [222, 235, 247],
+            [198, 219, 239],
+            [158, 202, 225],
+            [107, 174, 214],
+            [66, 146, 198],
+            [33, 113, 181],
+            [8, 81, 156],
+            [8, 48, 107]];
+
+            var scale = d3.scale.pow().exponent(0.4);
+                // d3.scale.linear();
+            
+            scale.domain([d3.min(farMap.values(), function (d) { return d.far; }), d3.max(farMap.values(), function (d) { return d.far; })])
+                    .range([0, 8]);
+
+            d3.json("seoul dong.geojson", function (json) {
+
+                mapFeature.selectAll("path")
+                   .data(json.features)
+                   .enter()
+                   .append("svg:path")
+                   .attr("class", "cell")
+                   .attr("d", path)
+                  .attr("fill", function (d) {
+                      var values = farMap.get(d.properties.EMD_CD).far;
+                      var o = Math.round(scale(values));
+                      return "rgb("+color[o][0]+","+color[o][1]+","+color[o][2]+")";
+                  })
+                   .attr("stroke", "#ffffff")
+                  .attr("stroke-width", 0.1)
+                  .append("title")
+                  .text(function (d) {
+                      var far = farMap.get(d.properties.EMD_CD).far;
+                      var area = farMap.get(d.properties.EMD_CD).area;
+                      var addr = farMap.get(d.properties.EMD_CD).addr;
+                      var gfa = farMap.get(d.properties.EMD_CD).gfa;
+                      return addr + "| 용적률:" + Math.round(far * 100) + "% | 대지면적:" + Math.round(area) + "m² | 연면적:" + Math.round(gfa) + "m²";
+                  })
+                 .style("font-size", "8pt");
+                ;
+
+            });
+
+
+            function zoom() {
+                mapFeature.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+                mapFeature.selectAll(".seoul").style("stroke-width", 1 / d3.event.scale + "px");
+                
+            };
+       
+            
+
+        }
+
+    </script>
+</head>
+<body>
+    
+
+    <div id="wrap_middle">
+        
+    </div>
+
+
+
+
+</body>
+</html>

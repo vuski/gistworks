@@ -1,0 +1,871 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>공직자 재산 부모자식</title>
+      <script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
+
+        <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no" />
+
+		<style type="text/css">
+            body {
+            margin: 0px;
+            font-family: 'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕','Noto Sans',Dotum,'돋움',sans-serif !important;
+            -webkit-user-select: none;
+        }
+
+            
+            #wrap_middle {
+
+
+            }
+
+		</style>
+        <script type="text/javascript">
+
+            window.onload = function () {
+
+                //Width and height
+                
+                var opa = 0.8;
+                var w = window,
+                    d = document,
+                    e = d.documentElement,
+                    g = d.getElementsByTagName('body')[0],
+                    w = (w.innerWidth || e.clientWidth || g.clientWidth)-20;
+                    h0 = w.innerHeight || e.clientHeight || g.clientHeight;
+               
+                var svg0 = d3.select("#wrap_middle")
+                                    .append("svg")
+                                    .attr("width", w)
+                                    .attr("height", h0);
+
+                var notice = svg0.append("g")
+                                .attr("class", "pre");
+                notice
+                    .append("text")
+                    .attr("class", "notice")
+                    .attr("dx", w / 2)
+                    .attr("dy", h0 / 2)
+                    .attr("text-anchor", "middle")
+                    .attr("alignment-baseline", "middle")
+                    .attr("font-size", "2em")
+                    //.attr("font-weight", "bold")
+                    .text("화면을 생성하는 중입니다.");
+                notice
+                    .append("text")
+                    .attr("class", "notice")
+                    .attr("dx", w / 2)
+                    .attr("dy", h0 / 2 + 50)
+                    .attr("text-anchor", "middle")
+                    .attr("alignment-baseline", "middle")
+                    .attr("font-size", "2em")
+                    //.attr("font-weight", "bold")
+                    .text("잠시 기다려주세요...");
+
+                var h, unit;
+
+                if (w < 400) {
+                    unit = w / 2;
+                } else {
+                    unit = w/ Math.floor(w / 200);
+                }
+
+
+                console.log("여기");
+
+                d3.csv("data_2017.csv", function (d) {
+
+                    var gen0_ = (+d.mo1) + (+d.fa1) + (+d.mo2) + (+d.fa2);
+                    var gen1_ = (+d.thePerson) + (+d.spouse);
+                    var gen2_ = (+d.s1) + (+d.s2) + (+d.d3) + (+d.s4) + (+d.d1) + (+d.d2) + (+d.d3) + (+d.d4) + (+d.d5);
+                    var gen3_ = (+d.gs1) + (+d.gs2) + (+d.gs3) + (+d.gs4) + (+d.gd1) + (+d.gd2) + (+d.gd3) + (+d.gd4) + (+d.gd5);
+
+                    var gen0r_ = Math.sqrt(Math.abs(gen0_));
+                    var gen1r_ = Math.sqrt(Math.abs(gen1_));
+                    var gen2r_ = Math.sqrt(Math.abs(gen2_));
+                    var gen3r_ = Math.sqrt(Math.abs(gen3_));
+
+                    var rTotal_ = gen0r_ + gen1r_ + gen2r_ + gen3r_;
+
+                    console.log(d);
+                    return {
+                        name: d.name,
+                        thePerson: +d.thePerson,
+                        spouse: +d.spouse,
+                   /*     mo1: +d.mo1,
+                        fa1: +d.fa1,
+                        mo2: +d.mo2,
+                        fa2: +d.fa2,
+                        gmo1: +d.gmo1,
+                        gfa1: +d.gfa1,
+                        s1: +d.s1,
+                        s2: +d.s2,
+                        s3: +d.s3,
+                        s4: +d.s4,
+                        d1: +d.d1,
+                        d2: +d.d2,
+                        d3: +d.d3,
+                        d4: +d.d4,
+                        d5: +d.d5,
+                        gs1: +d.gs1,
+                        gs2: +d.gs2,
+                        gs3: +d.gs3,
+                        gs4: +d.gs4,
+                        gd1: +d.gd1,
+                        gd2: +d.gd2,
+                        gd3: +d.gd3,
+                        gd4: +d.gd4,
+                        gd5: +d.gd5, */
+                        gen0: gen0_, 
+                        gen1: gen1_,
+                        gen2: gen2_,
+                        gen3: gen3_,
+                        rTotal : rTotal_
+                    };
+                }, function (data) {
+                    console.log("저기");
+                    //w = 1200;
+                    
+                    h = (Math.floor(data.length / Math.floor(w / unit)) + 1) * unit;
+
+                    console.log(w + "," + h);
+
+                    //기준에 따라 sort함
+                    data.sort(function (a, b) {
+                        var aa = a.gen2;
+                        var bb = b.gen2;
+                        return (aa < bb) ? 1 : (aa > bb ? -1 : 0);
+                    });
+                    //console.log(data[0].gen0);
+                    ready(data);
+                });
+
+             
+
+                function ready(data) {
+
+                    //var rMax = d3.max(data, function (d) { return d.rTotal; });
+                    rMax = 8000;
+                    //console.log(data[0].gen0);       
+                    
+
+                    var row = 0;
+                    var column = 0;
+                    d3.select("svg").remove();
+                    var svg = d3.select("#wrap_middle")
+                                .append("svg")
+                                .attr("width", w)
+                                .attr("height", h)
+                                //.on("wheel", function () { d3.event.preventDefault(); }) //브라우저 기본 줌을 안되게 함
+                                .on("dblclick.zoom", null);
+
+
+
+                    
+
+                    var jaesan = svg.append("g")
+                        .attr("class", "jaesan");
+
+                    var notice = svg.append("g")
+                        .attr("class", "noticeBoard");
+
+                    var jaesanEnter = jaesan.selectAll("g")
+                        .data(data, function (d) { return d.name; }).enter().append("g")
+                        .attr("class", function (d) { return d.name.replace(/\|/g,""); })
+                        .attr("transform",  function (d,i) {
+                            var maxColumn = Math.floor(w/unit);
+                            var row = (Math.floor(i/maxColumn));
+                            var column = (i-(row*maxColumn));
+                            return  "translate(" + column*unit + "," + row*unit + ")";
+                        })
+                        .on("mouseover", mouseover)
+                        .on("mouseout", mouseout)
+                        .on("touchstart", mouseover)
+                        .on("touchend", mouseout);
+                    
+                    jaesanEnter
+                            .append("rect")
+                            .attr("class", "batang")
+                            .attr("x", 0)
+			                .attr("y", 0)
+			                .attr("width", unit)
+			                .attr("height", unit)
+                            .attr("fill", "white")
+                            .attr("fill-opacity",0.01)
+                            
+                   
+                    function mouseover(d) {
+                        //console.log(d);
+                     /*   d3.select("."+d.name.replace(/\|/g,"")).append("rect")
+                            .attr("class", "popup")
+                            .attr("x", 0)
+			                .attr("y", 0)
+			                .attr("width", unit)
+			                .attr("height", unit)
+                            .attr("fill", "white")
+                            .attr("fill-opacity", 0.8);*/
+                        //d3.event.preventDefault();
+                        d3.event.stopPropagation();
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                            .select("circle")
+                            .transition()
+                            .duration(500)
+                            .attr("opacity", 1);
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                            .select("path")
+                            .transition()
+                            .duration(500)
+                            .attr("opacity", 1);
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                           .append("rect")
+                           .attr("class", "popupW")
+                           .attr("x", unit / 8)
+                           .attr("y", unit / 8)
+                           .attr("width", unit * 0.75)
+                           .attr("height", unit * 0.7)
+                           .attr("fill", "white")
+                           .attr("fill-opacity", 0.5)
+                           .attr("stroke", "#888888")
+                           .attr("rx", 10)
+                           .attr("ry", 10)
+                            .on("mousemove", function () {
+                                d3.selectAll(".popupW").remove();
+                                
+                                d3.select("." + d.name.replace(/\|/g, ""))
+                                   .append("rect")
+                                   .attr("class", "popupW")
+                                   .attr("x", unit / 8)
+                                   .attr("y", unit / 8)
+                                   .attr("width", unit * 0.75)
+                                   .attr("height", unit * 0.7)
+                                   .attr("fill", "white")
+                                   .attr("fill-opacity", 0.5)
+                                   .attr("stroke", "#888888")
+                                   .attr("rx", 10)
+                                   .attr("ry", 10);
+                                d3.select("." + d.name.replace(/\|/g, ""))
+                                    .append("text")
+                                    .attr("class", "popupW")
+                                    .attr("dx", unit / 2)
+			                        .attr("dy", (unit / 8) * 2)
+                                    .attr("text-anchor", "middle")
+                                    .attr("alignment-baseline", "middle")
+                                    .attr("font-size", "1em")
+                                    //.attr("font-weight", "bold")
+                                    .text(function (d) { return "양가 부모 :" + d3.format("-0,.1f")(d.gen0 / 100000) + "억"; })
+                                d3.select("." + d.name.replace(/\|/g, ""))
+                                   .append("text")
+                                   .attr("class", "popupW")
+                                   .attr("dx", unit / 2)
+                                   .attr("dy", (unit / 8) * 3)
+                                   .attr("text-anchor", "middle")
+                                   .attr("alignment-baseline", "middle")
+                                   .attr("font-size", "1em")
+                                   //.attr("font-weight", "bold")
+                                   .text(function (d) { return "본인 :" + d3.format("-0,.1f")(d.thePerson / 100000) + "억 "; });
+                                d3.select("." + d.name.replace(/\|/g, ""))
+                                   .append("text")
+                                   .attr("class", "popupW")
+                                   .attr("dx", unit / 2)
+                                   .attr("dy", (unit / 8) * 4)
+                                   .attr("text-anchor", "middle")
+                                   .attr("alignment-baseline", "middle")
+                                   .attr("font-size", "1em")
+                                   //.attr("font-weight", "bold")
+                                   .text(function (d) { return "배우자 :" + d3.format("-0,.1f")(d.spouse / 100000) + "억"; });
+                                d3.select("." + d.name.replace(/\|/g, ""))
+                                   .append("text")
+                                   .attr("class", "popupW")
+                                   .attr("dx", unit / 2)
+                                   .attr("dy", (unit / 8) * 5)
+                                   .attr("text-anchor", "middle")
+                                   .attr("alignment-baseline", "middle")
+                                   .attr("font-size", "1em")
+                                   //.attr("font-weight", "bold")
+                                   .text(function (d) { return "자녀:" + d3.format("-0,.1f")(d.gen2 / 100000) + "억"; });
+                       });
+                            
+           
+                           
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                            .append("text")
+                            .attr("class", "popupW")
+                            .attr("dx", unit / 2)
+			                .attr("dy", (unit / 8)*2)
+                            .attr("text-anchor", "middle")
+                            .attr("alignment-baseline", "middle")
+                            .attr("font-size", "1em")
+                            //.attr("font-weight", "bold")
+                            .text(function (d) {return "양가 부모 :" + d3.format("-0,.1f")(d.gen0 / 100000) + "억";})
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                           .append("text")
+                           .attr("class", "popupW")
+                           .attr("dx", unit / 2)
+                           .attr("dy", (unit / 8) * 3)
+                           .attr("text-anchor", "middle")
+                           .attr("alignment-baseline", "middle")
+                           .attr("font-size", "1em")
+                           //.attr("font-weight", "bold")
+                           .text(function (d) { return "본인 :" + d3.format("-0,.1f")(d.thePerson / 100000) + "억 "; });
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                           .append("text")
+                           .attr("class", "popupW")
+                           .attr("dx", unit / 2)
+                           .attr("dy", (unit / 8) * 4)
+                           .attr("text-anchor", "middle")
+                           .attr("alignment-baseline", "middle")
+                           .attr("font-size", "1em")
+                           //.attr("font-weight", "bold")
+                           .text(function (d) { return "배우자 :" + d3.format("-0,.1f")(d.spouse / 100000) + "억"; });
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                           .append("text")
+                           .attr("class", "popupW")
+                           .attr("dx", unit / 2)
+                           .attr("dy", (unit / 8) * 5)
+                           .attr("text-anchor", "middle")
+                           .attr("alignment-baseline", "middle")
+                           .attr("font-size", "1em")
+                           //.attr("font-weight", "bold")
+                           .text(function (d) { return "자녀:" + d3.format("-0,.1f")(d.gen2 / 100000) + "억"; });
+
+                    }
+
+
+                    function mouseout(d) {
+                        d3.selectAll(".popupW").remove();
+
+                        //console.log(d);
+                        
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                            .select("circle")
+                            .transition()
+                            .duration(500)
+                            .attr("opacity", opa);
+                        d3.select("." + d.name.replace(/\|/g, ""))
+                            .select("path")
+                            .transition()
+                            .duration(500)
+                            .attr("opacity", opa);
+                         
+                    }
+
+
+                    function dim(t) {
+                        return unit / 2 * (t / rMax);
+                    }
+
+
+                    jaesanEnter
+                        .append("circle")
+                        .attr("class", "gen0")
+                        .attr("cx", unit/2)
+                        .attr("cy",   function(d) {
+                            var gen0r = Math.sqrt(Math.abs(d.gen0));
+                            return (unit - dim(d.rTotal)*2) / 2 + dim(gen0r);
+                        })
+                        .attr("r", function (d) {
+                            var gen0r = Math.sqrt(Math.abs(d.gen0));
+                            return dim(gen0r);
+                        })
+                        .attr("stroke", "none")
+                        .attr("storke-width", 1)
+                        .attr("fill", function (d) {
+                            if (d.gen0 < 0) {
+                                return "black";
+                            } else { return "#e4c455"; }
+                        })
+                        .attr("opacity", opa)
+                        .append("title")
+                        .text(function (d) {return "양가 부모 :"+d3.format("-0,.1f")(d.gen0 / 100000) + "억";});
+
+                  
+
+                    //둘 중 하나가 음수일때는 이것만 그린다.
+                    jaesanEnter
+                        .append("circle")
+                        .attr("class", function (d) {
+                            if (d.thePerson < 0 || d.spouse < 0) return "gen1";
+                            else return "none";
+                        })
+                        .attr("cx",  unit / 2)
+                        .attr("cy", function (d) {
+                            if (d.thePerson < 0 || d.spouse < 0) {
+                                var gen0r = Math.sqrt(Math.abs(d.gen0));
+                                var gen1r = Math.sqrt(Math.abs(d.gen1));
+                                return (unit - dim(d.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r);
+                            } else return null;
+                        })
+                        .attr("r", function (d) {
+                            if (d.thePerson < 0 || d.spouse < 0) {
+                                var gen1r = Math.sqrt(Math.abs(d.gen1));
+                                return dim(gen1r);
+                            } else return null;
+                        })
+                        .attr("stroke", "none")
+                        .attr("storke-width", 1)
+                        .attr("fill", function (d) {
+                            if (d.gen1 < 0) {
+                                return "black";
+                            } else { return "#c9b9a5"; }
+                        })
+                        .attr("opacity", opa)
+                        .append("title")
+                        .text(function (d) {return "본인:" + d3.format("-0,.1f")(d.thePerson / 100000) + "억 \n배우자:" + d3.format("-0,.1f")(d.spouse / 100000) + "억";});
+
+
+                    //본인이 양수일때만 그린다.
+                    jaesanEnter
+                        .append("path")
+                        .attr("class", function (d) {
+                            if (d.thePerson > 0 && d.spouse>=0) return "gen1_thePerson";
+                        else return "none";
+                        })
+                        .attr("d", function (d) { return calculateArc1(d, unit); })
+                        .attr("stroke", "none")
+                        .attr("storke-width", 1)
+                        .attr("fill", function (d) {
+                            if (d.gen1 < 0) {
+                                return "black";
+                            } else { return "#c9b9a5"; }
+                        })
+                        .attr("opacity", opa)
+                        .append("title")
+                        .text(function (d) { return "본인 :" + d3.format("-0,.1f")(d.thePerson / 100000) + "억 "; });
+
+                    //배우자가 양수일때만 그린다.
+                    jaesanEnter
+                        .append("path")
+                        .attr("class", function (d) {
+                            if (d.thePerson >= 0 && d.spouse>0) return "gen1_spouse";
+                            else return "none";
+                        })
+                        .attr("d", function (d) { return calculateArc2(d, unit); })
+                        .attr("stroke", "none")
+                        .attr("storke-width", 1)
+                        .attr("fill", function (d) {
+                            if (d.gen1 < 0) {
+                                return "black";
+                            } else { return "#d70049"; }
+                        })
+                        .attr("opacity", opa)
+                        .append("title")
+                        .text(function (d) { return "배우자 :" + d3.format("-0,.1f")(d.spouse / 100000) + "억"; });
+                  
+                    d3.selectAll(".none").remove();
+
+                    function calculateArc1(d,unit) {
+
+                        if (d.thePerson > 0 && d.spouse>=0) {
+
+                            var rad1 = getRad1(d);
+                            var gen0r = Math.sqrt(Math.abs(d.gen0));
+                            var gen1r = Math.sqrt(Math.abs(d.gen1));
+                            var arc1 = d3.path();
+                            arc1.arc(unit / 2, (unit - dim(d.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r), dim(gen1r), rad1, 2 * Math.PI - rad1, false);
+
+                            return arc1;
+                        } else return "";
+                    }
+
+                    function calculateArc2(d,unit) {
+                        if (d.thePerson >= 0 && d.spouse>0) {
+                            var rad1 = getRad1(d);
+                            var gen0r = Math.sqrt(Math.abs(d.gen0));
+                            var gen1r = Math.sqrt(Math.abs(d.gen1));
+                            var arc2 = d3.path();
+                            arc2.arc(unit / 2, (unit - dim(d.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r), dim(gen1r), 2 * Math.PI - rad1, rad1, false);
+                            return arc2;
+                        } else return "";
+                    }
+                    
+                    function getRad1(d) {
+
+                        var k = d.thePerson / d.gen1;
+                        var rad1;
+                        //by Newton Method, 원의 분할선 구하기
+                        //http://mathforum.org/dr.math/faq/faq.circle.segment.html To refer initial value
+                        var t0, t1;
+                        if (k > 0 && k < 1) {
+                            t1 = Math.pow(12 * k * Math.PI, 1 / 3);
+                            for (var i = 0; i < 10; i++) {
+                                t0 = t1;
+                                t1 = (Math.sin(t0) - t0 * Math.cos(t0) + 2 * k * Math.PI) / (1 - Math.cos(t0));
+                            }
+                            rad1 = Math.PI - t1 / 2;
+                        } else if (k == 0) {
+                            rad1 = 0;
+                        } else if (k == 1) {
+                            rad1 = 2 * Math.PI;
+                        }
+
+                        return rad1;
+                    }
+
+
+                    jaesanEnter
+                            .append("circle")
+                            .attr("class", "gen2")
+                            .attr("cx", unit / 2)
+                            .attr("cy", function (d) {
+                                var gen0r = Math.sqrt(Math.abs(d.gen0));
+                                var gen1r = Math.sqrt(Math.abs(d.gen1));
+                                var gen2r = Math.sqrt(Math.abs(d.gen2));
+                                return (unit - dim(d.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r) * 2 + dim(gen2r);
+                            })
+                            .attr("r", function (d) {
+                                var gen2r = Math.sqrt(Math.abs(d.gen2));
+                                return dim(gen2r);
+                            })
+                            .attr("stroke", "none")
+                            .attr("storke-width", 1)
+                            .attr("fill", function (d) {
+                                if (d.gen2 < 0) {
+                                    return "black";
+                                } else { return "#846a5d"; }
+                            })
+                            .attr("opacity", opa)
+                        .append("title")
+                            .text(function (d) { return "자녀:" + d3.format("-0,.1f")(d.gen2 / 100000) + "억"; });
+
+
+                    jaesanEnter
+                       .append("text")
+                       .attr("x", unit / 2)
+                       .attr("y", unit - 32)
+                        .attr("text-anchor", "middle")
+                       .style("font-size", "1.2em")
+                       .attr("font-weight", "bold")
+                       //.attr("opacity", 0.5)
+                       .text(function (d) { return d.name.split("|")[2]; });  //이름
+
+
+                    jaesanEnter
+                        .append("text")
+                        .attr("x", unit / 2)
+                        .attr("y", unit - 17)
+                         .attr("text-anchor", "middle")
+                        .style("font-size", "0.6em")
+                       // .attr("opacity", 0.5)
+                        .text(function (d) { return d.name.split("|")[0];}); //소속
+
+                    jaesanEnter
+                        .append("text")
+                        .attr("x", unit / 2)
+                        .attr("y", unit - 1)
+                         .attr("text-anchor", "middle")
+                        .style("font-size", "0.8em")
+                       // .attr("opacity", 0.5)
+                        .text(function (d) { return d.name.split("|")[1]; });  //직위
+
+                    d3.selectAll(".notice").remove();
+
+
+
+                    //여기부터 초기화면 원그리기
+                    notice
+                        .append("rect")
+                        .attr("class", "notice")
+                        .attr("x", w / 8)
+                        .attr("y", h0 / 8)
+                        .attr("width", w * 0.75)
+                        .attr("height", h0 * 0.7)
+                        .attr("fill", "white")
+                        .attr("fill-opacity", 0.95)
+                        .attr("stroke", "#888888")
+                        .attr("rx", 20)
+                        .attr("ry", 20);
+                            
+
+                    var dd = data[7];
+
+                    notice
+                        .append("circle")
+                        .attr("class", "gen0")
+                        .attr("cx", w / 2)
+                        .attr("cy", function () {
+                            var gen0r = Math.sqrt(Math.abs(dd.gen0));
+                            return (h0 - dim(dd.rTotal) * 2) / 2 + dim(gen0r);
+                        })
+                        .attr("r", function () {
+                            var gen0r = Math.sqrt(Math.abs(dd.gen0));
+                            return dim(gen0r);
+                        })
+                        .attr("stroke", "none")
+                        .attr("storke-width", 1)
+                        .attr("fill", function () {
+                            if (dd.gen0 < 0) {
+                                return "black";
+                            } else { return "#e4c455"; }
+                        })
+                        .attr("opacity", opa);
+
+                    notice
+                        .append("path")
+                        .attr("class", function () {
+                            if (dd.thePerson > 0 && dd.spouse >= 0) return "gen1_thePerson";
+                            else return "none";
+                        })
+                        .attr("d", calculateArc11(dd,h0))
+                        .attr("stroke", "none")
+                        .attr("storke-width", 1)
+                        .attr("fill", function () {
+                            if (d.gen1 < 0) {
+                                return "black";
+                            } else { return "#c9b9a5"; }
+                        })
+                        .attr("opacity", opa);
+                        
+                    notice
+                        .append("path")
+                        .attr("class", function () {
+                            if (dd.thePerson >= 0 && dd.spouse > 0) return "gen1_spouse";
+                            else return "none";
+                        })
+                        .attr("d", calculateArc22(dd,h0))
+                        .attr("stroke", "none")
+                        .attr("storke-width", 1)
+                        .attr("fill", function () {
+                            if (dd.gen1 < 0) {
+                                return "black";
+                            } else { return "#d70049"; }
+                        })
+                        .attr("opacity", opa);
+                        
+                    notice
+                           .append("circle")
+                           .attr("class", "gen2")
+                           .attr("cx", w / 2)
+                           .attr("cy", function () {
+                               var gen0r = Math.sqrt(Math.abs(dd.gen0));
+                               var gen1r = Math.sqrt(Math.abs(dd.gen1));
+                               var gen2r = Math.sqrt(Math.abs(dd.gen2));
+                               return (h0 - dim(dd.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r) * 2 + dim(gen2r);
+                           })
+                           .attr("r", function (d) {
+                               var gen2r = Math.sqrt(Math.abs(dd.gen2));
+                               return dim(gen2r);
+                           })
+                           .attr("stroke", "none")
+                           .attr("storke-width", 1)
+                           .attr("fill", function (d) {
+                               if (dd.gen2 < 0) {
+                                   return "black";
+                               } else { return "#846a5d"; }
+                           })
+                           .attr("opacity", opa);
+
+                   
+                    notice
+                        .append("text")
+                        .attr("class", "noticeT")
+                        .attr("dx", w / 2)
+                        .attr("dy", function () {
+                            var gen0r = Math.sqrt(Math.abs(dd.gen0));
+                            return (h0 - dim(dd.rTotal) * 2) / 2 + dim(gen0r);
+                        })
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .attr("font-size", "1em")
+                        //.attr("font-weight", "bold")
+                        .text("양가 부모 재산");
+                    notice
+                        .append("text")
+                        .attr("class", "noticeT")
+                        .attr("dx", w / 2 -70)
+                        .attr("dy", function () {
+                            var gen0r = Math.sqrt(Math.abs(dd.gen0));
+                            var gen1r = Math.sqrt(Math.abs(dd.gen1));
+                            return (h0 - dim(dd.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r);
+                        })
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .attr("font-size", "1em")
+                        //.attr("font-weight", "bold")
+                        .text("본인 재산");
+                    notice
+                        .append("text")
+                        .attr("class", "noticeT")
+                        .attr("dx", w / 2+70)
+                        .attr("dy", function () {
+                            var gen0r = Math.sqrt(Math.abs(dd.gen0));
+                            var gen1r = Math.sqrt(Math.abs(dd.gen1));
+                            return (h0 - dim(dd.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r);
+                        })
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .attr("font-size", "1em")
+                        //.attr("font-weight", "bold")
+                        .text("배우자 재산");
+                    notice
+                        .append("text")
+                        .attr("class", "noticeT")
+                        .attr("dx", w / 2)
+                        .attr("dy", function () {
+                            var gen0r = Math.sqrt(Math.abs(dd.gen0));
+                            var gen1r = Math.sqrt(Math.abs(dd.gen1));
+                            var gen2r = Math.sqrt(Math.abs(dd.gen2));
+                            return (h0 - dim(dd.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r) * 2 + dim(gen2r);
+                        })
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .attr("font-size", "1em")
+                        //.attr("font-weight", "bold")
+                        .text("자녀 재산");
+
+                    notice
+                        .append("text")
+                        .attr("class", "noticeT")
+                        .attr("dx", w / 2)
+                        .attr("dy", h0 / 8 + 50)
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .attr("font-size", "1.2em")
+                        .attr("font-weight", "bold")
+                        .text("2017 고위공직자 재산공개");
+                    notice
+                        .append("text")
+                        .attr("class", "noticeT")
+                        .attr("dx", w / 2)
+                        .attr("dy", h0 / 8 + 100)
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .attr("font-size", "2em")
+                        .attr("font-weight", "bold")
+                        .text("세대별 재산");
+
+                    notice
+                        .append("text")
+                        .attr("class", "noticeT")
+                        .attr("dx", w / 2)
+                        .attr("dy", h0  /8 + h0*0.7 -50)
+                        .attr("text-anchor", "middle")
+                        .attr("alignment-baseline", "middle")
+                        .attr("font-size", "1.1em")
+                        //.attr("font-weight", "bold")
+                        .text("화면을 클릭하면 시작합니다.");
+
+
+                    notice
+                      .on("click", erase)
+                      .on("touchstart", erase);
+
+
+                      function calculateArc11(d, unit) {
+
+                          if (d.thePerson > 0 && d.spouse >= 0) {
+
+                              var rad1 = getRad1(d);
+                              var gen0r = Math.sqrt(Math.abs(d.gen0));
+                              var gen1r = Math.sqrt(Math.abs(d.gen1));
+                              var arc1 = d3.path();
+                              arc1.arc(w/ 2, (unit - dim(d.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r), dim(gen1r), rad1, 2 * Math.PI - rad1, false);
+
+                              return arc1;
+                          } else return "";
+                      }
+
+                      function calculateArc22(d, unit) {
+                          if (d.thePerson >= 0 && d.spouse > 0) {
+                              var rad1 = getRad1(d);
+                              var gen0r = Math.sqrt(Math.abs(d.gen0));
+                              var gen1r = Math.sqrt(Math.abs(d.gen1));
+                              var arc2 = d3.path();
+                              arc2.arc(w / 2, (unit - dim(d.rTotal) * 2) / 2 + dim(gen0r) * 2 + dim(gen1r), dim(gen1r), 2 * Math.PI - rad1, rad1, false);
+                              return arc2;
+                          } else return "";
+                      }
+
+
+
+
+                    function erase() {
+                        d3.select(".noticeBoard").remove();
+                    }
+
+
+                    //부부 재산 순서
+                    function reDraw1() {
+
+                        data.sort(function (a, b) {
+                            var aa = a.gen1;
+                            var bb = b.gen1;
+                            return (aa < bb) ? 1 : (aa > bb ? -1 : 0);
+                        });
+                        //console.log(data[0].gen0);
+                        d3.selectAll("svg").remove();
+                        ready(data);
+
+                    }
+
+                    //배우자 재산 순서
+                    function reDraw2() {
+
+                        data.sort(function (a, b) {
+                            var aa = a.spouse;
+                            var bb = b.spouse;
+                            return (aa < bb) ? 1 : (aa > bb ? -1 : 0);
+                        });
+                        //console.log(data[0].gen0);
+
+                        d3.selectAll("svg").remove();
+                        ready(data);
+                    }
+
+                    //총 재산 순서
+                    function reDraw2() {
+
+                        data.sort(function (a, b) {
+                            var aa = a.gen0+a.gen1+a.gen2+a.gen3;
+                            var bb = b.gen0+b.gen1+b.gen2+b.gen3;
+                            return (aa < bb) ? 1 : (aa > bb ? -1 : 0);
+                        });
+                        //console.log(data[0].gen0);
+
+                        d3.selectAll("svg").remove();
+                        ready(data);
+                    }
+
+                    //본인 순서
+                    function reDraw2() {
+
+                        data.sort(function (a, b) {
+                            var aa = a.thePerson;
+                            var bb = b.thePerson;
+                            return (aa < bb) ? 1 : (aa > bb ? -1 : 0);
+                        });
+                        //console.log(data[0].gen0);
+
+                        d3.selectAll("svg").remove();
+                        ready(data);
+                    }
+                   
+
+                    
+                }
+
+                
+                
+
+            }
+		</script>
+	</head>
+	<body>
+        <header id="main_header">
+
+        </header>
+
+        
+    <div id="wrap_middle">
+
+       
+
+    </div>
+
+       
+    
+
+		
+	</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Seoul FoodScape</title>
+	
+	
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDfRctCbeqRAFgOV6Fmi7fb_shd5OCHiZk&callback=initMap"></script>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+
+    <script type="text/javascript" src="data_matrix.js"></script>
+    <script type="text/javascript">
+        
+        var sites = readSites();
+        var centerXY = readXY();
+        var colors = readColors();
+
+        var data = new Array();
+        
+        function Data(lat, lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
+        
+        var dataColor = new Array();
+
+        ReReadSites();
+        ReReadColors();
+
+        var stColor, flColor;
+        var circleScale = 50;        
+        
+        var map2;
+        var polygon = new Array();
+        var circle = new Array();
+        var circleOptions = new Array();
+
+        function initialize() {
+
+            
+            var mapOptions = {
+                center: new google.maps.LatLng(37.538527, 126.981805),   
+                zoom: 13,                  
+                mapTypeId: google.maps.MapTypeId.ROADMAP  //ROADMAP ,SATELLITE ,HYBRID ,TERRAIN
+
+            };   
+            
+            map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+            
+            DrawBackground();
+
+            dataInput_Polygon();
+           
+            DrawPolygon();
+
+            DrawPieChart();
+
+
+        } //initialize()
+
+
+        function DrawPieChart() {
+
+            var txt = d3.select("body").append("text");
+
+            txt.text("Seoul Foodscape")
+                .attr("id", "title");
+
+            //Width and height
+            var w = 400;
+            var h = 400;
+
+            var dataset = [35000, 4072, 967, 3148, 10172, 12454, 6317, 1112, 5316, 4941];
+            var dataTxt = ["Korean", "Chinese", "Asian Fusion", "Western","Cafe", "Bar", "Chicken", "Fastfood", "Snack", "Japanese"];
+            var color = ["#c00000", "#ff8c00", "#ffff00", "#92d14f", "#00af50", "#0070c0", "#000000", "#012060", "#7030a0", "#ff1493"];
+
+            var outerRadius = 90;
+            var innerRadius = 40;
+            var arc = d3.svg.arc()
+							.innerRadius(innerRadius)
+							.outerRadius(outerRadius);
+
+            var pie = d3.layout.pie()
+                    .sort(null);
+
+            
+
+            //Create SVG element
+            var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+            //Set up groups
+            var arcs = svg.selectAll("g.arc")
+						  .data(pie(dataset))
+						  .enter()
+						  .append("g")
+						  .attr("class", "arc")
+						  .attr("transform", "translate(" + outerRadius*1.2 + "," + outerRadius*1.1 + ")");   
+
+            //Draw arc paths
+            arcs.append("path")
+			    .attr("fill", function (d, i) {
+			        return color[i];
+			    })
+			    .attr("d", arc);
+
+            //Labels
+            arcs.append("text")
+                .attr("dy", ".35em")
+			    .attr("transform", function (d,i) {
+			        var arcCentroid = arc.centroid(d);
+			        if (i == 2 | i == 7) {
+			            return "translate(" + arcCentroid[0] * 1.5 + "," + arcCentroid[1] * 1.5 + ")rotate(" + (angle(d)-90)+ ")";
+			        } else {
+			            return "translate(" + arcCentroid[0] + "," + arcCentroid[1]  + ")rotate(" + (angle(d)) + ")";
+			        }
+			        
+			    })
+			    .attr("text-anchor", function (d, i) {
+			        if (i == 2 | i == 7) {
+			            return "middle";
+			        } else {
+			            return "middle";
+			        }
+			    })
+                .style("fill",function (d,i) {
+                    if (i == 2 | i == 7) {
+                        return "black";
+                    } else {
+                        return "white";
+                    }
+                })
+			    .text(function (d,i) {
+			        return dataTxt[i];
+			    });
+
+            function angle(d) {
+                var a = (d.startAngle + d.endAngle) * 90 / Math.PI - 90;
+                return a > 90 ? a - 180 : a;
+            }
+
+
+
+        }
+
+        
+        function DrawBackground() {
+            var backRect = new Array();
+            var backCoord = [[37.4249, 126.76], [37.4249, 127.1855], [37.704, 127.1855], [37.704, 126.76], [37.4249, 126.76]];
+            for (var i = 0 ; i < backCoord.length ; i++) {
+                backRect.push(new google.maps.LatLng(backCoord[i][0], backCoord[i][1]));
+            }
+
+            var polygons = {
+                path: backRect,
+                strokeColor: "#ffffff",
+                strokeOpacity: 1,
+                strokeWeight: 0,
+                fillColor: "#ffffff",
+                fillOpacity: 0.8,
+                zIndex: 100
+            };
+
+            var background = new google.maps.Polygon(polygons);
+            background.setMap(map);
+        }
+
+        function DrawCircle() {
+
+            for (var i=0; i< circle.length ; i++) {
+                            
+                circle[i].setOptions(circleOptions[i]);
+                
+            }
+        }
+
+        function DrawPolygon() {
+
+            for (var i = 0; i < polygon.length ; i++) {
+                polygon[i].setMap(map);
+            }
+        }
+
+        function ReReadSites() {
+
+            var cnt = 0;
+            for (var i = 0; i < sites.length; i++) {
+
+                for (var j = 0 ; j < sites[i].length ; j++) {
+
+                    data[cnt] = new Array();
+
+                    for (var k = 0 ; k < sites[i][j].length ; k++) {
+
+                        data[cnt].push(new Data(sites[i][j][k][1], sites[i][j][k][0]));
+                    }
+                    cnt++;
+                }
+            }; 
+
+            
+        }
+
+
+        function ReReadColors() {
+
+            var cnt = 0;
+            for (var i = 0; i < colors.length; i++) {
+
+                for (var j = 0 ; j < colors[i].length ; j++) {
+
+                    dataColor[cnt] = new Array();
+
+                    dataColor[cnt][0] = colors[i][j][0];
+                    dataColor[cnt][1] = colors[i][j][1];
+                    
+                    cnt++;
+                }
+            };
+
+           
+        }
+
+        function dataInput_Circle() {
+
+            for (var index = 0 ; index < centerXY.length ; index++) {
+
+
+                var center = centerXY[index];
+
+                circleOptions[index] = {
+                    strokeColor: "#ff0000",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 1,
+                    fillColor: "#ff0000",
+                    fillOpacity: 0.10,
+                    map: map,
+                    center: new google.maps.LatLng(center[0], center[1]),
+                    radius: 30
+
+                };
+
+                circle[index] = new google.maps.Circle();
+
+
+
+            };
+
+
+        } 
+        
+        function dataInput_Polygon() {
+
+            for (var index = 0 ; index < data.length ; index++) {
+
+                var datum = data[index];
+
+                var polygonCoords = new Array();
+            
+                for (var i = 0 ; i < datum.length ; i++) {
+                    polygonCoords.push(new google.maps.LatLng(datum[i].lat,datum[i].lng));
+                }
+
+            stColor = "#909090";
+            flColor = dataColor[index][0];
+                
+
+            var polygons = {
+                path : polygonCoords,
+                strokeColor: stColor,
+                strokeOpacity: 0.5,
+                strokeWeight: 0.3,
+                fillColor: flColor,
+                fillOpacity: Number(dataColor[index][1]),
+                zIndex: 200,
+                map :map 
+            };
+
+            polygon[index] = new google.maps.Polygon(polygons);
+
+            }// for (index)
+
+
+
+        }
+
+
+    </script>
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        svg {
+
+            position: absolute;
+            top: 60px;
+            left: 100px;
+            z-index: 5;
+
+        }
+
+
+         #map-canvas, #map_canvas {
+            height: 100%;
+        }
+        
+
+        @media print {
+            html, body {
+                height: auto;
+            }
+
+            #map-canvas, #map_canvas {
+                height: 650px;
+            }
+        }
+        #panel {
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        margin-left: -180px;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+
+      }
+
+        #donutchart {
+        position: absolute;
+        top: 20px;
+        left: 100px;
+       
+        z-index: 5;
+        background-color: #fff;   
+      }
+
+        svg text {
+            font-family: 돋움체,Arial;         
+            fill : #ffffff;
+            font-weight : bold;
+                        
+        }
+
+        svg path {
+            stroke: #fff;
+        }
+
+        #title {
+            position: absolute;
+        top: 20px;
+        left: 115px;
+        font-family: 돋움,Arial;  
+        font-size : 28px;
+       font-weight : bold;
+        z-index: 5;
+        
+        }
+    </style>   
+
+
+</head>
+
+<body onload="initialize()">
+    
+    <div id="map_canvas" ></div>
+    
+		
+</body>
+</html>
