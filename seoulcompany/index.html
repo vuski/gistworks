@@ -2,10 +2,12 @@
 
 <html>
 <head>
+    <meta charset="utf-8">
 	<title>Increase and Decrease of Retailers in Seoul from 2006 to 2014</title>
 	
 	
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0_RppGZ1UPxrsKKhPtUYSwbd6V7e5LQY&callback=initMap"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script type="text/javascript" src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script type="text/javascript" src="../lib/d3.v4.min.js"></script>
     <script type="text/javascript" src="valueDifference_matrix.js"></script>
     <script type="text/javascript">
@@ -16,6 +18,7 @@
         
         var transparent = false;
         var recs = new Array(); 
+        var map;
 
         var toggle = 1; 
         var toggleText = ["선택된 업종의 합집합", "증감을 한번에", "선택된 업종의 교집합"];
@@ -255,32 +258,22 @@
 
         function initialize() {
 
-            var styles = [
-                {
-                    featureType: 'all',
-                    stylers: [
-                        { saturation: -100 }
-                    ]
-                }
-            ];
+            // MapLibre + Carto Positron (API key 불필요, 회색조 베이스맵)
+            map = new maplibregl.Map({
+                container: "map_canvas",
+                style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+                center: [126.981805, 37.568527],
+                zoom: 12
+            });
+            map.addControl(new maplibregl.NavigationControl(), "top-left");
 
-            var styledMap = new google.maps.StyledMapType(styles, { name: "Styled Map" });
-            // Google Map 
-            var mapOptions = {
-                center: new google.maps.LatLng(37.568527, 126.981805),
-                zoom: 13,
-                mapTypeControlOptions: {
-                    mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']  //ROADMAP ,SATELLITE ,HYBRID ,TERRAIN
-                }
-            };
+            map.on("load", function () {
 
-            map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-            map.mapTypes.set('map_style', styledMap);
-            map.setMapTypeId('map_style');
+            applyKoreanLabels();
 
             DrawBackground();
 
-            for (var i = 0 ; i < recs.length ; i++) drawPolygon(recs[i]);
+            drawPolygons();
 
 
             document.body.onkeyup = function (e) {
@@ -308,7 +301,18 @@
                 }
             }
 
+            });
+
         } //initialize()
+
+        function applyKoreanLabels() {
+            map.getStyle().layers.forEach(function (layer) {
+                var field = layer.layout && layer.layout["text-field"];
+                if (layer.type === "symbol" && field && JSON.stringify(field).indexOf("name") >= 0) {
+                    map.setLayoutProperty(layer.id, "text-field", ["coalesce", ["get", "name:ko"], ["get", "name"]]);
+                }
+            });
+        }
 
 
 
@@ -342,21 +346,19 @@
             var backRect = new Array();
             var backCoord = [[37.4249, 126.76], [37.4249, 127.1855], [37.704, 127.1855], [37.704, 126.76], [37.4249, 126.76]];
             for (var i = 0 ; i < backCoord.length ; i++) {
-                backRect.push(new google.maps.LatLng(backCoord[i][0],backCoord[i][1]));
+                backRect.push([backCoord[i][1], backCoord[i][0]]);
             }
 
-            var polygons = {
-                path: backRect,
-                strokeColor: "#ffffff",
-                strokeOpacity: 1,
-                strokeWeight: 0,
-                fillColor: "#ffffff",
-                fillOpacity: 0.8,
-                zIndex: 100
-            };
-
-            var background = new google.maps.Polygon(polygons);
-            background.setMap(map);
+            map.addSource("background", {
+                type: "geojson",
+                data: { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [backRect] } }
+            });
+            map.addLayer({
+                id: "background-fill",
+                type: "fill",
+                source: "background",
+                paint: { "fill-color": "#ffffff", "fill-opacity": 0.8 }
+            });
         }
 
 
@@ -364,55 +366,81 @@
 
 
 
-        function drawPolygon(datum) {
+        function drawPolygons() {
 
-            var drawOrder;
-            
-            var polygonCoords = new Array();
+            var features = new Array();
 
-            for (var i = 0 ; i < datum.coordi.length ; i++) {
-                polygonCoords.push(new google.maps.LatLng(datum.coordi[i].lat, datum.coordi[i].lng));
+            for (var k = 0 ; k < recs.length ; k++) {
+
+                var datum = recs[k];
+                var polygonCoords = new Array();
+
+                for (var i = 0 ; i < datum.coordi.length ; i++) {
+                    polygonCoords.push([datum.coordi[i].lng, datum.coordi[i].lat]);
+                }
+
+                features.push({ type: "Feature", id: k, properties: {}, geometry: { type: "Polygon", coordinates: [polygonCoords] } });
+
+                datum.polygon = makePolygonHandle(k);
             }
 
-            var stColor = "#909090";
-           
-            
-            var  flColor = "white";
-            var  fillOpa = 0;
-            
-            var polygons = {
-                path: polygonCoords,
-                strokeColor: stColor,
-                strokeOpacity: 0.5,
-                strokeWeight: 0.3,
-                fillColor: flColor,
-                fillOpacity: fillOpa,
-                zIndex : 200,
-                map :map 
-            };
+            map.addSource("cells", { type: "geojson", data: { type: "FeatureCollection", features: features } });
 
-            datum.polygon = new google.maps.Polygon(polygons);
-            
-            
+            map.addLayer({
+                id: "cells-fill",
+                type: "fill",
+                source: "cells",
+                paint: {
+                    "fill-color": ["to-color", ["coalesce", ["feature-state", "fillColor"], "white"]],
+                    "fill-opacity": ["coalesce", ["feature-state", "fillOpacity"], 0]
+                }
+            });
+
+            map.addLayer({
+                id: "cells-line",
+                type: "line",
+                source: "cells",
+                paint: { "line-color": "#909090", "line-opacity": 0.5, "line-width": 0.3 }
+            });
+
 
             //tooltips
-            var contentText = "<table border=\"0\"><tr>200m x 200m 격자에서 2006-2014년 사이의 업종 증감 (x 는 아예 없음을 나타냄)</tr><tr>";
-            for (var i = 0 ; i < dataTxt.length ; i++) contentText += "<td>"+ dataTxt[i] + "</td>"
+            var popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "none" });
+            var hoverId = null;
 
-            contentText += "</tr><tr>";
-            for (var i = 0 ; i < datum.value.length ; i++) contentText += "<td>"+datum.value[i] + "</td>";            
-            contentText += "</tr></table>";
+            map.on("mousemove", "cells-fill", function (e) {
+                var id = e.features[0].id;
+                if (id === hoverId) return;
+                hoverId = id;
 
-            var infoWindow = new google.maps.InfoWindow({ content: contentText, manWidth: 500 });
-            google.maps.event.addListener(datum.polygon, 'mouseover', function () {
-                infoWindow.setPosition(new google.maps.LatLng((datum.coordi[0].lat + datum.coordi[2].lat) / 2, (datum.coordi[0].lng + datum.coordi[2].lng) / 2));
-                infoWindow.open(map);                    
+                var datum = recs[id];
+                var contentText = "<table border=\"0\"><tr>200m x 200m 격자에서 2006-2014년 사이의 업종 증감 (x 는 아예 없음을 나타냄)</tr><tr>";
+                for (var i = 0 ; i < dataTxt.length ; i++) contentText += "<td>"+ dataTxt[i] + "</td>"
+
+                contentText += "</tr><tr>";
+                for (var i = 0 ; i < datum.value.length ; i++) contentText += "<td>"+datum.value[i] + "</td>";
+                contentText += "</tr></table>";
+
+                popup.setLngLat([(datum.coordi[0].lng + datum.coordi[2].lng) / 2, (datum.coordi[0].lat + datum.coordi[2].lat) / 2])
+                     .setHTML(contentText)
+                     .addTo(map);
             });
-            google.maps.event.addListener(datum.polygon, 'mouseout', function () {
-                infoWindow.open(null);
+            map.on("mouseleave", "cells-fill", function () {
+                hoverId = null;
+                popup.remove();
             });
+        }
 
-           
+        // 기존 Polygon.setOptions() 호출 형태 그대로 격자 색/투명도를 바꾸기 위한 핸들
+        function makePolygonHandle(id) {
+            return {
+                setOptions: function (options) {
+                    var state = {};
+                    if (options.fillColor !== undefined) state.fillColor = options.fillColor;
+                    if (options.fillOpacity !== undefined) state.fillOpacity = options.fillOpacity;
+                    map.setFeatureState({ source: "cells", id: id }, state);
+                }
+            };
         }
 
         function toggleData() {

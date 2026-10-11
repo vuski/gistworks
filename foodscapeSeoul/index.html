@@ -2,10 +2,12 @@
 
 <html>
 <head>
+    <meta charset="utf-8">
 	<title>Seoul FoodScape</title>
 	
 	
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0_RppGZ1UPxrsKKhPtUYSwbd6V7e5LQY&callback=initMap"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script type="text/javascript" src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script type="text/javascript" src="../lib/d3.v3.min.js"></script>
 
     <script type="text/javascript" src="data_matrix.js"></script>
@@ -30,33 +32,41 @@
         var stColor, flColor;
         var circleScale = 50;        
         
-        var map2;
-        var polygon = new Array();
-        var circle = new Array();
-        var circleOptions = new Array();
+        var map;
 
         function initialize() {
 
-            
-            var mapOptions = {
-                center: new google.maps.LatLng(37.538527, 126.981805),   
-                zoom: 13,                  
-                mapTypeId: google.maps.MapTypeId.ROADMAP  //ROADMAP ,SATELLITE ,HYBRID ,TERRAIN
+            // MapLibre + Carto Voyager (API key 불필요)
+            map = new maplibregl.Map({
+                container: "map_canvas",
+                style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+                center: [126.981805, 37.538527],
+                zoom: 12
+            });
+            map.addControl(new maplibregl.NavigationControl(), "bottom-left");
 
-            };   
-            
-            map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-            
-            DrawBackground();
+            map.on("load", function () {
 
-            dataInput_Polygon();
-           
-            DrawPolygon();
+                applyKoreanLabels();
+
+                DrawBackground();
+
+                DrawPolygon();
+            });
 
             DrawPieChart();
 
 
         } //initialize()
+
+        function applyKoreanLabels() {
+            map.getStyle().layers.forEach(function (layer) {
+                var field = layer.layout && layer.layout["text-field"];
+                if (layer.type === "symbol" && field && JSON.stringify(field).indexOf("name") >= 0) {
+                    map.setLayoutProperty(layer.id, "text-field", ["coalesce", ["get", "name:ko"], ["get", "name"]]);
+                }
+            });
+        }
 
 
         function DrawPieChart() {
@@ -150,37 +160,60 @@
             var backRect = new Array();
             var backCoord = [[37.4249, 126.76], [37.4249, 127.1855], [37.704, 127.1855], [37.704, 126.76], [37.4249, 126.76]];
             for (var i = 0 ; i < backCoord.length ; i++) {
-                backRect.push(new google.maps.LatLng(backCoord[i][0], backCoord[i][1]));
+                backRect.push([backCoord[i][1], backCoord[i][0]]);
             }
 
-            var polygons = {
-                path: backRect,
-                strokeColor: "#ffffff",
-                strokeOpacity: 1,
-                strokeWeight: 0,
-                fillColor: "#ffffff",
-                fillOpacity: 0.8,
-                zIndex: 100
-            };
-
-            var background = new google.maps.Polygon(polygons);
-            background.setMap(map);
-        }
-
-        function DrawCircle() {
-
-            for (var i=0; i< circle.length ; i++) {
-                            
-                circle[i].setOptions(circleOptions[i]);
-                
-            }
+            map.addSource("background", {
+                type: "geojson",
+                data: { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [backRect] } }
+            });
+            map.addLayer({
+                id: "background-fill",
+                type: "fill",
+                source: "background",
+                paint: { "fill-color": "#ffffff", "fill-opacity": 0.8 }
+            });
         }
 
         function DrawPolygon() {
 
-            for (var i = 0; i < polygon.length ; i++) {
-                polygon[i].setMap(map);
+            var features = new Array();
+
+            for (var index = 0 ; index < data.length ; index++) {
+
+                var datum = data[index];
+
+                var polygonCoords = new Array();
+
+                for (var i = 0 ; i < datum.length ; i++) {
+                    polygonCoords.push([datum[i].lng, datum[i].lat]);
+                }
+
+                features.push({
+                    type: "Feature",
+                    properties: { fillColor: dataColor[index][0], fillOpacity: Number(dataColor[index][1]) },
+                    geometry: { type: "Polygon", coordinates: [polygonCoords] }
+                });
             }
+
+            map.addSource("cells", { type: "geojson", data: { type: "FeatureCollection", features: features } });
+
+            map.addLayer({
+                id: "cells-fill",
+                type: "fill",
+                source: "cells",
+                paint: {
+                    "fill-color": ["to-color", ["get", "fillColor"]],
+                    "fill-opacity": ["get", "fillOpacity"]
+                }
+            });
+
+            map.addLayer({
+                id: "cells-line",
+                type: "line",
+                source: "cells",
+                paint: { "line-color": "#909090", "line-opacity": 0.5, "line-width": 0.3 }
+            });
         }
 
         function ReReadSites() {
@@ -221,69 +254,6 @@
             };
 
            
-        }
-
-        function dataInput_Circle() {
-
-            for (var index = 0 ; index < centerXY.length ; index++) {
-
-
-                var center = centerXY[index];
-
-                circleOptions[index] = {
-                    strokeColor: "#ff0000",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 1,
-                    fillColor: "#ff0000",
-                    fillOpacity: 0.10,
-                    map: map,
-                    center: new google.maps.LatLng(center[0], center[1]),
-                    radius: 30
-
-                };
-
-                circle[index] = new google.maps.Circle();
-
-
-
-            };
-
-
-        } 
-        
-        function dataInput_Polygon() {
-
-            for (var index = 0 ; index < data.length ; index++) {
-
-                var datum = data[index];
-
-                var polygonCoords = new Array();
-            
-                for (var i = 0 ; i < datum.length ; i++) {
-                    polygonCoords.push(new google.maps.LatLng(datum[i].lat,datum[i].lng));
-                }
-
-            stColor = "#909090";
-            flColor = dataColor[index][0];
-                
-
-            var polygons = {
-                path : polygonCoords,
-                strokeColor: stColor,
-                strokeOpacity: 0.5,
-                strokeWeight: 0.3,
-                fillColor: flColor,
-                fillOpacity: Number(dataColor[index][1]),
-                zIndex: 200,
-                map :map 
-            };
-
-            polygon[index] = new google.maps.Polygon(polygons);
-
-            }// for (index)
-
-
-
         }
 
 
